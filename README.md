@@ -33,3 +33,9 @@ npm run dev          # http://localhost:4321
 
 To test the retail widget locally, set `BLIZZARD_CLIENT_ID` and `BLIZZARD_CLIENT_SECRET` in your
 shell and run `npm run fetch:retail` before `npm run dev`.
+
+## License
+
+Copyright (c) 2026 ChakraaThePanda. All rights reserved. This repository is public for
+reference only; the code, the Aethernal logo and banner, and the site content may not be reused
+without permission.
