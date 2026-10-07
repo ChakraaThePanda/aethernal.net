@@ -133,8 +133,10 @@ details.acc > summary > span:first-child { flex: 1; }
 }
 
 /* One color per person, used by owner tags and the WoW page filter. */
-[data-owner="Pat"] { --owner: #4fc7ff; }
-[data-owner="Mimi"] { --owner: #f48cba; }
+[data-owner="Pat"] { --owner: #ff7c0a; }  /* Druid orange */
+[data-owner="Mimi"] { --owner: #0070dd; } /* Shaman blue */
+[data-owner="Clo"] { --owner: #aad372; }  /* Hunter green */
+[data-owner="Alex"] { --owner: #c41e3a; } /* Death Knight red */
 .char .owner { color: var(--owner, var(--text)); border-color: var(--owner, var(--border)); }
 
 /* Cards set display:grid, which would otherwise override the hidden attribute. */

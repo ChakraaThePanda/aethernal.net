@@ -9,16 +9,11 @@ export interface Player {
   name: string;
   decks: Deck[];
   precons?: Deck[];
-  extras?: { title: string; href: string }[];
 }
 
 export const players: Player[] = [
   {
     name: 'Pat',
-    extras: [
-      { title: 'Spreadsheet', href: 'https://docs.google.com/spreadsheets/d/1t-ZdZq-tqRnuexR8ILe2Rah3DTtFVedYnzA2LG-5QSQ/' },
-      { title: 'MTG Guessing Game', href: 'https://htmlpreview.github.io/?https://github.com/ChakraaThePanda/HTML-Minigames/blob/main/MTG-Decklists/MTG-Decklists.html' },
-    ],
     decks: [
       { name: 'Cookies & Cream', id: 25896354 },
       { name: "Guess Who's Back?", id: 23493749 },

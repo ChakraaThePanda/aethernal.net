@@ -1,24 +1,18 @@
 ---
 import Base from '../layouts/Base.astro';
 import DeckCard from '../components/DeckCard.astro';
+import OwnerFilter from '../components/OwnerFilter.astro';
 import { players } from '../data/decks';
 ---
 <Base title="MTG Decks" description="Commander decks from the whole group, on Archidekt.">
   <h1>MTG Decks</h1>
   <p class="lead">Our Commander decks. Each one opens on Archidekt.</p>
 
-  <nav class="jump pill-list" aria-label="Players">
-    {players.map((p) => <a class="pill" href={`#${p.name.toLowerCase()}`}>{p.name}</a>)}
-  </nav>
+  <OwnerFilter owners={players.map((p) => p.name)} />
 
   {players.map((p) => (
-    <section id={p.name.toLowerCase()}>
-      <h2 class="section-title">{p.name}</h2>
-      {p.extras && (
-        <ul class="pill-list extras">
-          {p.extras.map((x) => <li><a class="pill" href={x.href} target="_blank" rel="noopener">{x.title} <span class="ext">↗</span></a></li>)}
-        </ul>
-      )}
+    <section data-filter-item data-owner={p.name}>
+      <h2 class="section-title"><span class="owner-name">{p.name}</span></h2>
       <div class="decks">
         {p.decks.map((d) => <DeckCard deck={d} />)}
       </div>
@@ -35,9 +29,7 @@ import { players } from '../data/decks';
 </Base>
 
 <style>
-  section { scroll-margin-top: 80px; }
-  .jump { margin-bottom: 8px; }
-  .extras { margin-bottom: 16px; }
+  .owner-name { color: var(--owner, var(--text)); }
   .decks { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
   .precons { grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr)); gap: 10px; }
   @media (max-width: 480px) {

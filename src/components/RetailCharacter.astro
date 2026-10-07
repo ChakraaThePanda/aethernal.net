@@ -28,7 +28,7 @@ const mplus = c.mythicPlus;
     </div>
   </article>
 ) : (
-  <article class="char panel" style={`--class: ${color}`} data-owner={c.owner}>
+  <article class="char panel" style={`--class: ${color}`} data-filter-item data-owner={c.owner}>
     {c.owner && <span class="owner" data-owner={c.owner}>{c.owner}</span>}
     {c.render && <div class="render" style={`background-image: url('${c.render}')`} role="img" aria-label={`${c.name} character render`}></div>}
     <div class="body">

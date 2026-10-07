@@ -1,0 +1,49 @@
+---
+// "All / Pat / Mimi / ..." buttons. Hides every [data-filter-item] whose data-owner doesn't match,
+// and any [data-filter-group] left with nothing visible. Pages that render items later (like the
+// Aethernal cards) call window.applyOwnerFilter() afterwards.
+interface Props {
+  owners: string[];
+}
+
+const { owners } = Astro.props;
+---
+{owners.length > 1 && (
+  <div class="owner-filter pill-list" role="group" aria-label="Show only">
+    <button type="button" class="pill" data-filter="" aria-pressed="true">All</button>
+    {owners.map((o) => <button type="button" class="pill" data-filter={o} data-owner={o} aria-pressed="false">{o}</button>)}
+  </div>
+)}
+
+<script is:inline>
+  (() => {
+    let active = '';
+    window.applyOwnerFilter = () => {
+      for (const item of document.querySelectorAll('[data-filter-item]')) {
+        item.hidden = Boolean(active) && item.dataset.owner !== active;
+      }
+      for (const group of document.querySelectorAll('[data-filter-group]')) {
+        const items = group.querySelectorAll('[data-filter-item]');
+        group.hidden = items.length > 0 && [...items].every((i) => i.hidden);
+      }
+    };
+    const buttons = document.querySelectorAll('.owner-filter button');
+    for (const btn of buttons) {
+      btn.addEventListener('click', () => {
+        active = btn.dataset.filter;
+        for (const b of buttons) b.setAttribute('aria-pressed', String(b === btn));
+        window.applyOwnerFilter();
+      });
+    }
+  })();
+</script>
+
+<style>
+  .owner-filter { margin: -8px 0 8px; }
+  .pill { cursor: pointer; font: inherit; font-size: 0.9rem; }
+  .pill[aria-pressed="true"] {
+    border-color: var(--owner, var(--border-hi));
+    color: var(--owner, var(--accent));
+    background: var(--accent-soft);
+  }
+</style>

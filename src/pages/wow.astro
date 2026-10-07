@@ -2,6 +2,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import Base from '../layouts/Base.astro';
 import RetailCharacter from '../components/RetailCharacter.astro';
+import OwnerFilter from '../components/OwnerFilter.astro';
 import { aethernalApi, aethernalCharacters, blizzardCharacters } from '../data/characters';
 import { CLASS_COLORS } from '../lib/wow';
 
@@ -17,14 +18,9 @@ const retail = existsSync(retailFile) ? JSON.parse(readFileSync(retailFile, 'utf
   <h1>World of Warcraft</h1>
   <p class="lead">Our characters on Retail, WoW Forever and Aethernal.</p>
 
-  {owners.length > 1 && (
-    <div class="owner-filter pill-list" role="group" aria-label="Show characters for">
-      <button type="button" class="pill" data-filter="" aria-pressed="true">All</button>
-      {owners.map((o) => <button type="button" class="pill" data-filter={o} data-owner={o} aria-pressed="false">{o}</button>)}
-    </div>
-  )}
+  <OwnerFilter owners={owners} />
 
-  <section data-realm="retail">
+  <section data-filter-group>
     <h2 class="section-title">Retail</h2>
     {retail ? (
       <div class="chars">
@@ -35,7 +31,7 @@ const retail = existsSync(retailFile) ? JSON.parse(readFileSync(retailFile, 'utf
     )}
   </section>
 
-  <section data-realm="aethernal">
+  <section data-filter-group>
     <h2 class="section-title">Aethernal <span id="realm-status" class="realm-status" hidden></span></h2>
     <div id="aethernal" class="chars" data-api={aethernalApi} data-names={aethernalCharacters.map((c) => c.name).join(',')} data-owners={JSON.stringify(Object.fromEntries(aethernalCharacters.map((c) => [c.name.toLowerCase(), c.owner])))}>
       <p class="panel empty muted">Contacting the realm…</p>
@@ -76,7 +72,7 @@ const retail = existsSync(retailFile) ? JSON.parse(readFileSync(retailFile, 'utf
         + `<span class="ilvl">${i.itemLevel ?? ''}</span></li>`)
       .join('');
     return `
-      <article class="char panel" style="--class: ${color}" data-owner="${esc(owner || '')}">
+      <article class="char panel" style="--class: ${color}" data-filter-item data-owner="${esc(owner || '')}">
         ${owner ? `<span class="owner" data-owner="${esc(owner)}">${esc(owner)}</span>` : ''}
         <div class="body">
           <header>
@@ -113,7 +109,7 @@ const retail = existsSync(retailFile) ? JSON.parse(readFileSync(retailFile, 'utf
       root.innerHTML = data.characters.length
         ? data.characters.map(card).join('')
         : '<p class="panel empty muted">No characters to show yet.</p>';
-      applyFilter();
+      window.applyOwnerFilter?.();
       window.$WowheadPower?.refreshLinks();
     } catch {
       statusEl.hidden = false;
@@ -123,33 +119,11 @@ const retail = existsSync(retailFile) ? JSON.parse(readFileSync(retailFile, 'utf
     }
   }
 
-  // Owner filter: hides other people's cards, and any realm section left with none showing.
-  let activeOwner = '';
-  function applyFilter() {
-    for (const card of document.querySelectorAll('article.char')) {
-      card.hidden = Boolean(activeOwner) && card.dataset.owner !== activeOwner;
-    }
-    for (const section of document.querySelectorAll('section[data-realm]')) {
-      const cards = section.querySelectorAll('article.char');
-      section.hidden = cards.length > 0 && [...cards].every((c) => c.hidden);
-    }
-  }
-  for (const btn of document.querySelectorAll('.owner-filter button')) {
-    btn.addEventListener('click', () => {
-      activeOwner = btn.dataset.filter;
-      for (const b of document.querySelectorAll('.owner-filter button')) b.setAttribute('aria-pressed', String(b === btn));
-      applyFilter();
-    });
-  }
-
   loadAethernal();
   setInterval(loadAethernal, 60_000);
 </script>
 
 <style>
-  .owner-filter { margin: -8px 0 8px; }
-  .owner-filter .pill { cursor: pointer; font: inherit; font-size: 0.9rem; }
-  .owner-filter .pill[aria-pressed="true"] { border-color: var(--owner, var(--border-hi)); color: var(--owner, var(--accent)); background: var(--accent-soft); }
   .chars { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
   /* Also injected by script, hence global. */
   :global(.empty) { padding: 18px 20px; margin: 0; grid-column: 1 / -1; }
