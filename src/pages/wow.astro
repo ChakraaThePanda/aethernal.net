@@ -129,8 +129,9 @@ const retail = loadRetail();
   .realm-status.off { color: #ff9a9d; border-color: #5c2a2d; background: #2e1414; }
 
   /* The Aethernal cards are injected by script, so their styles must be global. */
-  #aethernal :global(.char) { position: relative; overflow: hidden; border-top: 3px solid var(--class, var(--border)); }
-  #aethernal :global(.body) { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+  #aethernal :global(.char) { position: relative; overflow: hidden; border-top: 3px solid var(--class, var(--border)); display: flex; flex-direction: column; }
+  #aethernal :global(.body) { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+  #aethernal :global(.body > footer) { margin-top: auto; }
   #aethernal :global(header) { display: flex; gap: 14px; align-items: center; }
   #aethernal :global(.portrait) { position: relative; flex-shrink: 0; width: 56px; height: 56px; }
   #aethernal :global(.class-icon) { width: 56px; height: 56px; border-radius: 8px; border: 2px solid var(--class); }

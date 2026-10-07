@@ -165,5 +165,6 @@ const mplus = atCap ? c.mythicPlus : null;
   .raids .none { color: var(--muted); }
   .pad { padding: 4px 12px 10px; margin: 0; }
 
-  footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  /* Pinned to the bottom so cards in the same row line up even when one has fewer sections. */
+  footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: auto; }
 </style>
