@@ -68,7 +68,7 @@ const retail = loadRetail();
       .join('');
     return `
       <article class="char panel" style="--class: ${color}" data-filter-item data-owner="${esc(owner || '')}">
-        ${owner || c.hardcore ? `<div class="tags">${owner ? `<span class="owner" data-owner="${esc(owner)}">${esc(owner)}</span>` : ''}${c.hardcore ? '<span class="hardcore">Hardcore</span>' : ''}</div>` : ''}
+        ${owner || c.hardcore ? `<div class="tags">${owner ? `<span class="owner" data-owner="${esc(owner)}">${esc(owner)}</span>` : ''}${c.hardcore ? '<span class="hardcore" title="Hardcore">HC</span>' : ''}</div>` : ''}
         <div class="body">
           <header>
             <div class="portrait">
