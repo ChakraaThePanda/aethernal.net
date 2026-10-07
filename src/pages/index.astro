@@ -84,8 +84,8 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
           </span>
           <span class="ilvl" title="Item level"></span>
           <span class="tags">
-            <span class="owner-tag" hidden></span>
             <span class="hardcore" title="Hardcore" hidden>HC</span>
+            <span class="owner-tag" hidden></span>
           </span>
         </li>
       </template>
@@ -269,8 +269,8 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
   .roster :global(li.online) .cname::after {
     content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px var(--ok);
   }
-  /* Owner, then the Hardcore (HC) pill under it. Fixed width so item levels line up across rows. */
-  .tags { width: 5.5rem; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+  /* The Hardcore (HC) pill, then the owner. Fixed width so item levels line up across rows. */
+  .tags { width: 6.5rem; flex-shrink: 0; display: flex; justify-content: flex-end; align-items: center; gap: 4px; }
   .owner-tag[hidden] { display: none; }
   .owner-tag {
     font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
