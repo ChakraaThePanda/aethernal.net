@@ -32,7 +32,7 @@ const mplus = atCap ? c.mythicPlus : null;
   </article>
 ) : (
   <article class="char panel" style={`--class: ${color}`} data-filter-item data-owner={c.owner}>
-    {c.owner && <span class="owner" data-owner={c.owner}>{c.owner}</span>}
+    {c.owner && <div class="tags"><span class="owner" data-owner={c.owner}>{c.owner}</span></div>}
     {c.render && <div class="render" style={`background-image: url('${c.render}')`} role="img" aria-label={`${c.name} character render`}></div>}
     <div class="body">
       <header>

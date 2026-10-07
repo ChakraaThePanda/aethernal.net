@@ -68,7 +68,7 @@ const retail = loadRetail();
       .join('');
     return `
       <article class="char panel" style="--class: ${color}" data-filter-item data-owner="${esc(owner || '')}">
-        ${owner ? `<span class="owner" data-owner="${esc(owner)}">${esc(owner)}</span>` : ''}
+        ${owner || c.hardcore ? `<div class="tags">${owner ? `<span class="owner" data-owner="${esc(owner)}">${esc(owner)}</span>` : ''}${c.hardcore ? '<span class="hardcore">Hardcore</span>' : ''}</div>` : ''}
         <div class="body">
           <header>
             <div class="portrait">
@@ -81,7 +81,6 @@ const retail = loadRetail();
               </h3>
               <div class="sub">Level ${c.level} ${esc(c.race)} <span class="cls">${esc(c.className)}</span></div>
               ${c.guild ? `<div class="sub muted">&lt;${esc(c.guild)}&gt;</div>` : ''}
-              ${c.hardcore ? '<span class="hardcore">Hardcore</span>' : ''}
             </div>
           </header>
           <dl class="stats">
@@ -142,7 +141,6 @@ const retail = loadRetail();
   }
   #aethernal :global(.cname) { margin: 0; font-size: 1.35rem; color: var(--class); display: flex; align-items: center; gap: 8px; }
   #aethernal :global(.sub) { font-size: 0.9rem; }
-  #aethernal :global(.hardcore) { margin-top: 6px; }
   #aethernal :global(.cls) { display: block; color: var(--class); font-weight: 600; }
   #aethernal :global(.dot) { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); opacity: 0.5; }
   #aethernal :global(.dot.on) { background: var(--ok); opacity: 1; box-shadow: 0 0 8px var(--ok); }
