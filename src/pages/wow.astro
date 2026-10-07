@@ -169,7 +169,7 @@ const retail = existsSync(retailFile) ? JSON.parse(readFileSync(retailFile, 'utf
   }
   #aethernal :global(.cname) { margin: 0; font-size: 1.35rem; color: var(--class); display: flex; align-items: center; gap: 8px; }
   #aethernal :global(.sub) { font-size: 0.9rem; }
-  #aethernal :global(.cls) { color: var(--class); font-weight: 600; }
+  #aethernal :global(.cls) { display: block; color: var(--class); font-weight: 600; }
   #aethernal :global(.dot) { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); opacity: 0.5; }
   #aethernal :global(.dot.on) { background: var(--ok); opacity: 1; box-shadow: 0 0 8px var(--ok); }
   #aethernal :global(.stats) { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0; }
