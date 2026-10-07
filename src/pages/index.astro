@@ -4,7 +4,7 @@ import { destinations } from '../data/links';
 ---
 <Base>
   <section class="hero">
-    <img class="banner" src="/images/banner.webp" alt="Aethernal" width="900" height="360" />
+    <img class="banner" src="/images/banner.webp" alt="Aethernal" width="918" height="539" />
     <div class="ornate-divider" aria-hidden="true">&#9670;</div>
     <p class="lead">Our corner of the internet: a WoW private server, our characters, Magic decks and assorted projects.</p>
   </section>
@@ -25,13 +25,13 @@ import { destinations } from '../data/links';
   .hero { text-align: center; margin: 24px 0 32px; }
   .banner {
     width: min(520px, 90%); height: auto; margin: 0 auto;
-    filter: drop-shadow(0 0 22px rgba(79, 199, 255, 0.35));
+    filter: drop-shadow(0 0 22px rgba(var(--accent-rgb), 0.35));
     animation: frostGlow 4s ease-in-out infinite;
   }
   /* Same pulse as the logo on wow.aethernal.net. */
   @keyframes frostGlow {
-    0%, 100% { filter: drop-shadow(0 0 16px rgba(79, 199, 255, 0.3)); }
-    50% { filter: drop-shadow(0 0 30px rgba(79, 199, 255, 0.6)); }
+    0%, 100% { filter: drop-shadow(0 0 16px rgba(var(--accent-rgb), 0.3)); }
+    50% { filter: drop-shadow(0 0 30px rgba(var(--accent-rgb), 0.6)); }
   }
   .hero .lead { margin: 0 auto; }
 </style>

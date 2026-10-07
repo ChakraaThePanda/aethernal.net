@@ -51,7 +51,7 @@ const commanderNames = commanders.map((c) => c.name).join(' & ');
   .compact .commander { font-size: 0.72rem; }
   .deck:hover, .deck:focus-visible {
     border-color: var(--border-hi); transform: translateY(-2px);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5), 0 0 18px rgba(79, 199, 255, 0.12);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5), 0 0 18px rgba(var(--accent-rgb), 0.12);
   }
   .deck:hover .art { transform: scale(1.04); }
 </style>
