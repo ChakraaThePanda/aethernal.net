@@ -11,14 +11,17 @@ const lastSeen = c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA',
 
 const DIFF_SHORT: Record<string, string> = { LFR: 'LFR', NORMAL: 'N', HEROIC: 'H', MYTHIC: 'M' };
 // Headline for the collapsed raid bar: the newest raid's hardest difficulty with any kills.
-const raids = c.raids?.raids ?? [];
+const raids = (!c.maxLevel || c.level >= c.maxLevel) ? (c.raids?.raids ?? []) : [];
 const headline = (() => {
   const raid = raids[0];
   if (!raid) return null;
   const best = [...raid.progress].reverse().find((p: any) => p.killed > 0);
   return best ? `${best.killed}/${best.total} ${DIFF_SHORT[best.difficulty]}` : `0/${raid.progress[0]?.total ?? 0}`;
 })();
-const mplus = c.mythicPlus;
+// Endgame sections only for characters at the level cap (taken from the journal's newest raids,
+// so it follows new expansions). If the cap couldn't be determined, show them anyway.
+const atCap = !c.maxLevel || c.level >= c.maxLevel;
+const mplus = atCap ? c.mythicPlus : null;
 ---
 {c.error ? (
   <article class="char panel">

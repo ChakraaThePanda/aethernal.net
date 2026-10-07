@@ -79,10 +79,13 @@ function latestRaidTier(api, staticNs) {
           id: r.id,
           name: r.name,
           bosses: inst?.encounters?.length ?? 0,
+          minimumLevel: inst?.minimum_level ?? 0,
           difficulties: (inst?.modes ?? []).map((m) => m.mode.type).filter((d) => DIFFICULTIES.includes(d)),
         };
       }));
-      return { expansion: expansion?.name ?? newest.name, raids: raids.reverse() }; // newest raid first
+      // The newest raids require the level cap, so their minimum level is the current max level.
+      const maxLevel = Math.max(0, ...raids.map((r) => r.minimumLevel)) || null;
+      return { expansion: expansion?.name ?? newest.name, maxLevel, raids: raids.reverse() }; // newest raid first
     })().catch((err) => (console.warn(`  journal: ${err.message}`), null)));
   }
   return journalCache.get(staticNs);
@@ -189,6 +192,7 @@ async function fetchCharacter(api, c) {
     avatar: asset('avatar'),
     inset: asset('inset'),
     render: asset('main-raw') ?? asset('main'),
+    maxLevel: tier?.maxLevel ?? null,
     mythicPlus: buildMythicPlus(keystone, season),
     raids: buildRaids(tier, raids),
     equipment: (equipment?.equipped_items ?? []).map((item) => ({
