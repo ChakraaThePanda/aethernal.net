@@ -38,8 +38,11 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
           <span>Aethernal</span>
         </a>
         <nav aria-label="Main">
-          {nav.map((item) => (
-            <a href={item.href} data-same-tab aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+          {nav.map((item, i) => (
+            <>
+              {item.group && item.group !== nav[i - 1]?.group && <span class="nav-group">{item.group}</span>}
+              <a href={item.href} data-same-tab aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+            </>
           ))}
         </nav>
       </div>
@@ -86,7 +89,12 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; flex-wrap: wrap; }
   .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.05em; }
   .brand img { filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.45)); }
-  nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .nav-group {
+    margin-left: 8px; padding: 2px 4px 2px 14px; border-left: 1px solid var(--border);
+    font-family: var(--font-display); font-weight: 700; font-size: 0.72rem;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); opacity: 0.8;
+  }
   nav a {
     color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.95rem;
     padding: 6px 12px; border-radius: 6px;
@@ -96,6 +104,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   @media (max-width: 480px) {
     .header-inner { justify-content: center; padding-top: 8px; padding-bottom: 8px; gap: 6px; }
     nav a { padding: 6px 10px; }
+    .nav-group { margin-left: 4px; padding-left: 10px; }
   }
   .site-footer { border-top: 1px solid var(--border); padding: 20px 0; color: var(--muted); font-size: 0.85rem; }
   .site-footer .container { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
