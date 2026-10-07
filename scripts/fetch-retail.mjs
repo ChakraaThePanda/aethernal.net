@@ -2,7 +2,7 @@
 // writes src/data/generated/retail.json for the WoW page to render at build time.
 //
 // Needs BLIZZARD_CLIENT_ID and BLIZZARD_CLIENT_SECRET (GitHub Actions secrets in CI, or a local
-// .env-style export when testing). Without them it writes nothing and the page shows a notice.
+// .env file). Without them it writes nothing and the page shows a notice.
 //
 // The character list is parsed out of characters.ts rather than imported, so this runs on plain
 // Node without a TypeScript loader.
@@ -180,17 +180,14 @@ async function fetchCharacter(api, c) {
     name: profile.name,
     owner: c.owner,
     realm: profile.realm.name,
-    region: c.region,
     level: profile.level,
     race: profile.race.name,
     className: profile.character_class.name,
     spec: profile.active_spec?.name ?? null,
-    faction: profile.faction.name,
     guild: profile.guild?.name ?? null,
     itemLevel: profile.equipped_item_level ?? profile.average_item_level ?? null,
     lastLogin: profile.last_login_timestamp ?? null,
     avatar: asset('avatar'),
-    inset: asset('inset'),
     render: asset('main-raw') ?? asset('main'),
     maxLevel: tier?.maxLevel ?? null,
     mythicPlus: buildMythicPlus(keystone, season),
@@ -222,5 +219,5 @@ for (const c of characters) {
 }
 
 await mkdir(OUT_DIR, { recursive: true });
-await writeFile(OUT_FILE, JSON.stringify({ fetchedAt: new Date().toISOString(), characters: results }, null, 2));
+await writeFile(OUT_FILE, JSON.stringify({ characters: results }, null, 2));
 console.log(`Wrote ${results.length} character(s) to src/data/generated/retail.json`);

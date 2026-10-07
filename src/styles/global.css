@@ -17,7 +17,6 @@
   --accent-rgb: 79, 199, 255;
   --accent-soft: rgba(var(--accent-rgb), 0.12);
   --ok: #3fb950;
-  --bad: #ff6a6a;
   --radius: 8px;
   --font-body: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Cinzel', Georgia, serif;

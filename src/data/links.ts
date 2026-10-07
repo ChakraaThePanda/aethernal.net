@@ -1,4 +1,5 @@
-// Destinations shown on the home page. `external` links open in a new tab.
+// Destinations shown on the home page. `external` links open in a new tab; the rest (including
+// the account panel, which shares this site's menu) open in the same tab.
 export interface SiteLink {
   title: string;
   description: string;
@@ -13,11 +14,10 @@ export const destinations: SiteLink[] = [
     description: 'Our Wrath of the Lich King private realm. Create an account and manage your characters.',
     href: 'https://wow.aethernal.net/',
     tag: 'WoW',
-    external: true,
   },
   {
     title: 'Characters',
-    description: 'Live profiles for our characters on retail and on Aethernal.',
+    description: 'Live profiles for our characters on Retail, WoW Forever and Aethernal.',
     href: '/wow/',
     tag: 'WoW',
   },

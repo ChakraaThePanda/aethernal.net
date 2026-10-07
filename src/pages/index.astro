@@ -11,7 +11,7 @@ import { destinations } from '../data/links';
 
   <div class="grid">
     {destinations.map((d) => (
-      <a class="card panel" href={d.href} target={d.external ? '_blank' : undefined} rel={d.external ? 'noopener' : undefined}>
+      <a class="card panel" href={d.href} target={d.external ? '_blank' : undefined} rel={d.external ? 'noopener' : undefined} data-same-tab={d.external ? undefined : ''}>
         <span class="tag">{d.tag}</span>
         <span class="card-title">{d.title} {d.external && <span class="ext">↗</span>}</span>
         <p class="card-desc">{d.description}</p>
