@@ -11,6 +11,5 @@ export const nav: NavItem[] = [
   { href: '/', label: 'Home' },
   { href: '/wow/', label: 'WoW' },
   { href: '/mtg/', label: 'MTG' },
-  { href: '/sheets/', label: 'Sheets' },
   { href: 'https://wow.aethernal.net/', label: 'Server' },
 ];

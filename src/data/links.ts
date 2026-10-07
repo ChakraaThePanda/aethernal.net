@@ -31,14 +31,8 @@ export const destinations: SiteLink[] = [
     title: 'Survivor Pool',
     description: 'Picks and standings for the survivor pool.',
     href: 'https://survivor.aethernal.net/',
-    tag: 'Sheets',
+    tag: 'Sheet',
     external: true,
-  },
-  {
-    title: 'Spreadsheets',
-    description: 'Collection trackers and other sheets.',
-    href: '/sheets/',
-    tag: 'Sheets',
   },
   {
     title: 'GitHub',
@@ -49,22 +43,3 @@ export const destinations: SiteLink[] = [
   },
 ];
 
-export interface Sheet {
-  title: string;
-  description: string;
-  href: string;
-}
-
-// Add more Google Sheets here.
-export const sheets: Sheet[] = [
-  {
-    title: 'Survivor Pool',
-    description: 'Picks and standings for the survivor pool.',
-    href: 'https://survivor.aethernal.net/',
-  },
-  {
-    title: 'MTG Collection',
-    description: "Pat's Magic: The Gathering spreadsheet.",
-    href: 'https://docs.google.com/spreadsheets/d/1t-ZdZq-tqRnuexR8ILe2Rah3DTtFVedYnzA2LG-5QSQ/',
-  },
-];

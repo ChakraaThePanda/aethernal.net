@@ -1,6 +1,6 @@
 # aethernal.net
 
-Personal site: links to our projects, MTG decks, spreadsheets, and live World of Warcraft
+Personal site: links to our projects, MTG decks, and live World of Warcraft
 character profiles. Built with [Astro](https://astro.build) and deployed to GitHub Pages.
 
 ## Editing content
@@ -9,7 +9,7 @@ Everything you'd normally change lives in `src/data/`:
 
 | File | What it controls |
 | --- | --- |
-| `links.ts` | Home page cards and the Spreadsheets page |
+| `links.ts` | Home page cards |
 | `decks.ts` | MTG decks per player (Archidekt ids; art is fetched automatically) |
 | `characters.ts` | Tracked WoW characters, retail and Aethernal |
 
