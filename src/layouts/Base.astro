@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { nav } from '../data/nav';
 
 interface Props {
   title?: string;
@@ -10,12 +11,6 @@ const { title, description = 'Aethernal: our WoW server, characters, MTG decks a
 const fullTitle = title ? `${title} · Aethernal` : 'Aethernal';
 const path = Astro.url.pathname;
 
-const nav = [
-  { href: '/', label: 'Home' },
-  { href: '/wow/', label: 'WoW' },
-  { href: '/mtg/', label: 'MTG' },
-  { href: '/sheets/', label: 'Sheets' },
-];
 const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 ---
 <!doctype html>
@@ -43,7 +38,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
         </a>
         <nav aria-label="Main">
           {nav.map((item) => (
-            <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+            <a href={item.href} data-same-tab aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
           ))}
         </nav>
       </div>
@@ -59,13 +54,14 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
         <span class="dot" aria-hidden="true">&#9670;</span>
         <a href="https://github.com/ChakraaThePanda">GitHub</a>
         <span class="dot" aria-hidden="true">&#9670;</span>
-        <a href="https://wow.aethernal.net/">WoW Server</a>
+        <a href="https://wow.aethernal.net/" data-same-tab>WoW Server</a>
       </div>
     </footer>
     <script is:inline>
       // Every link to another site opens in a new tab, including ones added later by page scripts.
+      // Menu links are exempt so moving to the account panel feels like the same site.
       const markExternal = (a) => {
-        if (a.host && a.host !== location.host) {
+        if (a.host && a.host !== location.host && !a.hasAttribute('data-same-tab')) {
           a.target = '_blank';
           a.rel = 'noopener';
         }
