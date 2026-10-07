@@ -90,6 +90,7 @@ const retail = loadRetail();
             ${c.honorableKills ? `<div><dt>Honor kills</dt><dd>${c.honorableKills}</dd></div>` : ''}
           </dl>
           ${gear ? `<details class="acc"><summary><span>Equipment</span></summary><ul class="gear">${gear}</ul></details>` : ''}
+          <footer class="small muted">${c.online ? 'Online now' : c.lastSeen ? `Last seen ${new Date(c.lastSeen).toLocaleDateString('en-CA', { dateStyle: 'medium' })}` : ''}</footer>
         </div>
       </article>`;
   }

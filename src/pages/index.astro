@@ -11,7 +11,11 @@ import { classColor } from '../lib/wow';
 
 const PANEL = 'https://wow.aethernal.net';
 
-const retail = (loadRetail()?.characters ?? []).filter((c) => !c.error);
+// Retail characters newest login first. The page script re-sorts everyone (Aethernal included) by
+// last played once the server answers; the roster shows the top four.
+const retail = (loadRetail()?.characters ?? [])
+  .filter((c) => !c.error)
+  .sort((a, b) => (b.lastLogin ?? 0) - (a.lastLogin ?? 0));
 
 // The four most recently edited decks across everyone.
 const allDecks = players.flatMap((p) => [...p.decks, ...(p.precons ?? [])].map((d) => ({ deck: d, owner: p.name })));
@@ -61,7 +65,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
       </div>
       <ul class="roster">
         {retail.map((c) => (
-          <li style={`--class: ${classColor(c.className)}`}>
+          <li style={`--class: ${classColor(c.className)}`} data-played={c.lastLogin ?? 0}>
             {c.avatar ? <img class="portrait" src={c.avatar} alt="" width="36" height="36" loading="lazy" /> : <span class="portrait"></span>}
             <span class="who">
               <span class="cname">{c.name}</span>
@@ -72,7 +76,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
           </li>
         ))}
         {aethernalCharacters.map((c) => (
-          <li data-aethernal={c.name.toLowerCase()}>
+          <li data-aethernal={c.name.toLowerCase()} data-played="0">
             <span class="portrait"></span>
             <span class="who">
               <span class="cname">{c.name}</span>
@@ -171,7 +175,13 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
         li.querySelector('.sub')!.textContent = `${c.level} ${c.className} · Aethernal`;
         li.querySelector('.ilvl')!.textContent = c.itemLevel ?? '';
         li.classList.toggle('online', c.online);
+        li.dataset.played = String(c.online ? Date.now() : c.lastSeen ?? 0);
       }
+      // Most recently played first; CSS shows the first four.
+      const roster = document.querySelector('.roster')!;
+      [...roster.children]
+        .sort((a, b) => Number((b as HTMLElement).dataset.played) - Number((a as HTMLElement).dataset.played))
+        .forEach((li) => roster.append(li));
     } catch {
       status.className = 'status off';
       status.textContent = 'Unreachable';
@@ -252,6 +262,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
   .roster { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
   .roster li { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--border); }
   .roster li:first-child { border-top: 0; padding-top: 0; }
+  .roster li:nth-child(n + 5) { display: none; }
   .roster :global(.portrait) {
     width: 36px; height: 36px; border-radius: 6px; flex-shrink: 0;
     border: 2px solid var(--class, var(--border)); background: var(--panel);
