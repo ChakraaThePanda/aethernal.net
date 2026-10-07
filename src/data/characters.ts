@@ -13,13 +13,13 @@ export interface BlizzardCharacter {
 
 export const blizzardCharacters: BlizzardCharacter[] = [
   { name: 'chakraa', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
-  { name: 'melodie', realm: 'frostwolf', region: 'us', namespace: 'profile-us', owner: 'Mimi' },
+  { name: 'melodie', realm: 'frostwolf', region: 'us', namespace: 'profile-us', owner: 'Pat' },
 ];
 
 // Aethernal characters are fetched live in the browser from the account panel's public API.
 // The server only answers for names in its own PUBLIC_CHARACTERS allowlist.
 export const aethernalApi = 'https://wow.aethernal.net/api/public/characters';
 export const aethernalCharacters: { name: string; owner: string }[] = [
-  { name: 'Fish', owner: '' },
-  { name: 'Croustille', owner: '' },
+  { name: 'Fish', owner: 'Pat' },
+  { name: 'Croustille', owner: 'Mimi' },
 ];

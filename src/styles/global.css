@@ -131,3 +131,11 @@ details.acc > summary > span:first-child { flex: 1; }
   color: var(--text); background: rgba(5, 7, 13, 0.75);
   border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px;
 }
+
+/* One color per person, used by owner tags and the WoW page filter. */
+[data-owner="Pat"] { --owner: #4fc7ff; }
+[data-owner="Mimi"] { --owner: #f48cba; }
+.char .owner { color: var(--owner, var(--text)); border-color: var(--owner, var(--border)); }
+
+/* Cards set display:grid, which would otherwise override the hidden attribute. */
+[hidden] { display: none !important; }
