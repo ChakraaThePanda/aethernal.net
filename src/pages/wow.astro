@@ -10,7 +10,6 @@ import { CLASS_COLORS } from '../lib/wow';
 // into the build output once Astro bundles this page.
 const retailFile = `${process.cwd()}/src/data/generated/retail.json`;
 const retail = existsSync(retailFile) ? JSON.parse(readFileSync(retailFile, 'utf8')) : null;
-const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
 ---
 <Base title="World of Warcraft" description="Live World of Warcraft character profiles on Retail, WoW Forever and the Aethernal server.">
   <h1>World of Warcraft</h1>
@@ -19,15 +18,9 @@ const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
   <section>
     <h2 class="section-title">Retail</h2>
     {retail ? (
-      <>
-        <div class="chars">
-          {retail.characters.map((c: any) => <RetailCharacter c={c} />)}
-        </div>
-        <p class="small muted note">
-          Updated <time datetime={fetchedAt!.toISOString()} data-relative>{fetchedAt!.toUTCString()}</time>.
-          Blizzard refreshes profiles after logging out.
-        </p>
-      </>
+      <div class="chars">
+        {retail.characters.map((c: any) => <RetailCharacter c={c} />)}
+      </div>
     ) : (
       <p class="panel empty muted">Retail profiles appear here after the next deploy fetches them from Battle.net.</p>
     )}
@@ -47,12 +40,6 @@ const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
 </Base>
 
 <script define:vars={{ CLASS_COLORS }}>
-  // Relative "updated" time for the retail block.
-  for (const el of document.querySelectorAll('time[data-relative]')) {
-    const mins = Math.round((Date.now() - new Date(el.dateTime)) / 60000);
-    el.textContent = mins < 1 ? 'just now' : mins < 60 ? `${mins} min ago` : mins < 1440 ? `${Math.round(mins / 60)} h ago` : el.textContent;
-  }
-
   // Aethernal: fetched live from the account panel's public API.
   const root = document.getElementById('aethernal');
   const statusEl = document.getElementById('realm-status');
@@ -132,7 +119,6 @@ const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
 
 <style>
   .chars { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
-  .note { margin-top: 12px; }
   /* Also injected by script, hence global. */
   :global(.empty) { padding: 18px 20px; margin: 0; grid-column: 1 / -1; }
   .realm-status { font-family: var(--font-body); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; padding: 2px 10px; border-radius: 999px; border: 1px solid; }

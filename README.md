@@ -31,8 +31,9 @@ npm install
 npm run dev          # http://localhost:4321
 ```
 
-To test the retail widget locally, set `BLIZZARD_CLIENT_ID` and `BLIZZARD_CLIENT_SECRET` in your
-shell and run `npm run fetch:retail` before `npm run dev`.
+To test the retail widget locally, copy `.env.example` to `.env` (git-ignored), fill in the
+Battle.net credentials, and run `npm run fetch:retail` once before `npm run dev`. Re-run it
+whenever you want fresh character data.
 
 ## License
 
