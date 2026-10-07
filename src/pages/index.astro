@@ -70,7 +70,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
               <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · Retail</span>
             </span>
             {c.itemLevel && <span class="ilvl" title="Item level">{c.itemLevel}</span>}
-            {c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}
+            <span class="tags">{c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}</span>
           </li>
         ))}
       </ul>
@@ -81,10 +81,12 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
           <span class="who">
             <span class="cname"></span>
             <span class="sub"></span>
-            <span class="hardcore" hidden>Hardcore</span>
           </span>
           <span class="ilvl" title="Item level"></span>
-          <span class="owner-tag" hidden></span>
+          <span class="tags">
+            <span class="owner-tag" hidden></span>
+            <span class="hardcore" hidden>Hardcore</span>
+          </span>
         </li>
       </template>
     </section>
@@ -267,7 +269,8 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
   .roster :global(li.online) .cname::after {
     content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px var(--ok);
   }
-  .who .hardcore { align-self: flex-start; margin-top: 3px; }
+  /* Owner, then Hardcore under it. Fixed width so item levels line up whatever the tags say. */
+  .tags { width: 5.5rem; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
   .owner-tag[hidden] { display: none; }
   .owner-tag {
     font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
