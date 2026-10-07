@@ -123,3 +123,11 @@ details.acc > summary > span:first-child { flex: 1; }
 .acc .gear li { display: grid; grid-template-columns: 90px 1fr auto; gap: 8px; padding: 4px 12px; }
 .acc .gear a { text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .acc .gear .slot, .acc .gear .ilvl { color: var(--muted); }
+
+/* Whose character a card is. */
+.char .owner {
+  position: absolute; top: 12px; right: 12px; z-index: 1;
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text); background: rgba(5, 7, 13, 0.75);
+  border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px;
+}

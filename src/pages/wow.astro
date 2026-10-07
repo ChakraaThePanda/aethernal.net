@@ -35,7 +35,7 @@ const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
 
   <section>
     <h2 class="section-title">Aethernal <span id="realm-status" class="realm-status" hidden></span></h2>
-    <div id="aethernal" class="chars" data-api={aethernalApi} data-names={aethernalCharacters.join(',')}>
+    <div id="aethernal" class="chars" data-api={aethernalApi} data-names={aethernalCharacters.map((c) => c.name).join(',')} data-owners={JSON.stringify(Object.fromEntries(aethernalCharacters.map((c) => [c.name.toLowerCase(), c.owner])))}>
       <p class="panel empty muted">Contacting the realm…</p>
     </div>
   </section>
@@ -69,7 +69,10 @@ const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
     return h >= 24 ? `${Math.floor(h / 24)}d ${h % 24}h` : `${h}h`;
   };
 
+  const owners = JSON.parse(root.dataset.owners || '{}');
+
   function card(c) {
+    const owner = owners[c.name.toLowerCase()];
     const color = CLASS_COLORS[c.className] || 'var(--text)';
     const gear = (c.equipment || [])
       .map((i) => `<li><span class="slot">${esc(i.slot)}</span>`
@@ -78,6 +81,7 @@ const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
       .join('');
     return `
       <article class="char panel" style="--class: ${color}">
+        ${owner ? `<span class="owner">${esc(owner)}</span>` : ''}
         <div class="body">
           <header>
             <div class="portrait">

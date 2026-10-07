@@ -71,7 +71,9 @@ function latestRaidTier(api, staticNs) {
       const newest = tiers.sort((a, b) => b.id - a.id)[0];
       if (!newest) return null;
       const expansion = await api(`/data/wow/journal-expansion/${newest.id}`, staticNs);
-      const raids = await Promise.all((expansion?.raids ?? []).map(async (r) => {
+      // The journal files the expansion's world bosses as a "raid" named after the expansion.
+      const realRaids = (expansion?.raids ?? []).filter((r) => r.name !== expansion.name);
+      const raids = await Promise.all(realRaids.map(async (r) => {
         const inst = await api(`/data/wow/journal-instance/${r.id}`, staticNs);
         return {
           id: r.id,
