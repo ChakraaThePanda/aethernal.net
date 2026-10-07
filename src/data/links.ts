@@ -29,9 +29,9 @@ export const destinations: SiteLink[] = [
   },
   {
     title: 'Survivor Pool',
-    description: 'The survivor pool.',
+    description: 'Picks and standings for the survivor pool.',
     href: 'https://survivor.aethernal.net/',
-    tag: 'Game',
+    tag: 'Sheets',
     external: true,
   },
   {
@@ -57,6 +57,11 @@ export interface Sheet {
 
 // Add more Google Sheets here.
 export const sheets: Sheet[] = [
+  {
+    title: 'Survivor Pool',
+    description: 'Picks and standings for the survivor pool.',
+    href: 'https://survivor.aethernal.net/',
+  },
   {
     title: 'MTG Collection',
     description: "Pat's Magic: The Gathering spreadsheet.",
