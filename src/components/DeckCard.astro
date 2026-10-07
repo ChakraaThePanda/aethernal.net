@@ -1,6 +1,6 @@
 ---
 import { deckUrl, type Deck } from '../data/decks';
-import { deckArt } from '../lib/archidekt';
+import { deckInfo } from '../lib/archidekt';
 
 interface Props {
   deck: Deck;
@@ -8,11 +8,22 @@ interface Props {
 }
 
 const { deck, compact = false } = Astro.props;
-const art = await deckArt(deck.id);
+const { art, commanders } = await deckInfo(deck.id);
+const commanderNames = commanders.map((c) => c.name).join(' & ');
 ---
-<a class:list={['deck panel', { compact }]} href={deckUrl(deck.id)} target="_blank" rel="noopener">
+<a
+  class:list={['deck panel', { compact }]}
+  href={deckUrl(deck.id)}
+  target="_blank"
+  rel="noopener"
+  data-preview={commanders.map((c) => c.image).join(' ') || undefined}
+  data-preview-alt={commanderNames || undefined}
+>
   <div class="art" style={art ? `background-image: url('${art}')` : undefined}></div>
-  <span class="name">{deck.name}</span>
+  <span class="label">
+    <span class="name">{deck.name}</span>
+    {commanderNames && <span class="commander">{commanderNames}</span>}
+  </span>
 </a>
 
 <style>
@@ -30,10 +41,14 @@ const art = await deckArt(deck.id);
   }
   .art::after {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(180deg, transparent 35%, rgba(5, 7, 13, 0.92));
+    background: linear-gradient(180deg, transparent 30%, rgba(5, 7, 13, 0.95));
   }
-  .name { position: relative; padding: 12px 14px; font-weight: 600; line-height: 1.3; text-shadow: 0 1px 3px #000; }
-  .compact .name { font-size: 0.9rem; padding: 10px 12px; }
+  .label { position: relative; display: flex; flex-direction: column; gap: 1px; padding: 12px 14px; text-shadow: 0 1px 3px #000; min-width: 0; }
+  .name { font-weight: 600; line-height: 1.3; }
+  .commander { font-size: 0.8rem; color: var(--muted); line-height: 1.3; }
+  .compact .label { padding: 10px 12px; }
+  .compact .name { font-size: 0.9rem; }
+  .compact .commander { font-size: 0.72rem; }
   .deck:hover, .deck:focus-visible {
     border-color: var(--border-hi); transform: translateY(-2px);
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5), 0 0 18px rgba(79, 199, 255, 0.12);

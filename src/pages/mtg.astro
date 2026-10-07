@@ -26,10 +26,53 @@ import { players } from '../data/decks';
       )}
     </section>
   ))}
+
+  <div id="card-preview" class="card-preview" aria-hidden="true" hidden></div>
 </Base>
+
+<script>
+  // Full commander card(s) floating next to the cursor. Mouse only: on touch, tapping a deck just
+  // opens it.
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    const preview = document.getElementById('card-preview')!;
+    const GAP = 18;
+
+    const place = (e: MouseEvent) => {
+      const { width, height } = preview.getBoundingClientRect();
+      let x = e.clientX + GAP;
+      let y = e.clientY - height / 2;
+      if (x + width > innerWidth - 8) x = e.clientX - GAP - width; // flip to the left near the edge
+      y = Math.max(8, Math.min(y, innerHeight - height - 8));
+      preview.style.transform = `translate(${x}px, ${y}px)`;
+    };
+
+    for (const deck of document.querySelectorAll<HTMLElement>('[data-preview]')) {
+      deck.addEventListener('mouseenter', (e) => {
+        preview.replaceChildren(...deck.dataset.preview!.split(' ').map((src) => {
+          const img = new Image(244, 340);
+          img.src = src;
+          img.alt = deck.dataset.previewAlt ?? '';
+          return img;
+        }));
+        preview.hidden = false;
+        place(e);
+      });
+      deck.addEventListener('mousemove', place);
+      deck.addEventListener('mouseleave', () => { preview.hidden = true; });
+    }
+  }
+</script>
 
 <style>
   .owner-name { color: var(--owner, var(--text)); }
+  .card-preview {
+    position: fixed; top: 0; left: 0; z-index: 50;
+    display: flex; gap: 8px; pointer-events: none;
+  }
+  .card-preview :global(img) {
+    width: 244px; height: auto; border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
   .decks { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
   .precons { grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr)); gap: 10px; }
   @media (max-width: 480px) {
