@@ -58,6 +58,13 @@ const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
   const root = document.getElementById('aethernal');
   const statusEl = document.getElementById('realm-status');
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
+  // AzerothCore has no character renders, so the portrait is Wowhead's class icon with a small
+  // race/gender icon in the corner.
+  const ICONS = 'https://wow.zamimg.com/images/wow/icons/large';
+  const slug = (s) => String(s).toLowerCase().replace(/\s+/g, '');
+  const classIcon = (c) => `${ICONS}/classicon_${slug(c.className)}.jpg`;
+  const raceIcon = (c) =>
+    `${ICONS}/race_${c.race === 'Undead' ? 'scourge' : slug(c.race)}_${c.gender === 'Female' ? 'female' : 'male'}.jpg`;
   const played = (sec) => {
     const h = Math.floor(sec / 3600);
     return h >= 24 ? `${Math.floor(h / 24)}d ${h % 24}h` : `${h}h`;
@@ -74,6 +81,10 @@ const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
       <article class="char panel" style="--class: ${color}">
         <div class="body">
           <header>
+            <div class="portrait">
+              <img class="class-icon" src="${classIcon(c)}" alt="${esc(c.className)}" width="56" height="56" loading="lazy">
+              <img class="race-icon" src="${raceIcon(c)}" alt="${esc(`${c.gender} ${c.race}`)}" width="24" height="24" loading="lazy">
+            </div>
             <div>
               <h3 class="cname">${esc(c.name)}
                 <span class="dot ${c.online ? 'on' : ''}" title="${c.online ? 'Online' : 'Offline'}"></span>
@@ -129,6 +140,13 @@ const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
   /* The Aethernal cards are injected by script, so their styles must be global. */
   #aethernal :global(.char) { position: relative; overflow: hidden; border-top: 3px solid var(--class, var(--border)); }
   #aethernal :global(.body) { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+  #aethernal :global(header) { display: flex; gap: 14px; align-items: center; }
+  #aethernal :global(.portrait) { position: relative; flex-shrink: 0; width: 56px; height: 56px; }
+  #aethernal :global(.class-icon) { width: 56px; height: 56px; border-radius: 8px; border: 2px solid var(--class); }
+  #aethernal :global(.race-icon) {
+    position: absolute; right: -6px; bottom: -6px; width: 24px; height: 24px;
+    border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--border);
+  }
   #aethernal :global(.cname) { margin: 0; font-size: 1.35rem; color: var(--class); display: flex; align-items: center; gap: 8px; }
   #aethernal :global(.sub) { font-size: 0.9rem; }
   #aethernal :global(.cls) { color: var(--class); font-weight: 600; }
