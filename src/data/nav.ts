@@ -9,7 +9,7 @@ export const SITE = 'https://aethernal.net';
 
 export const nav: NavItem[] = [
   { href: '/', label: 'Home' },
-  { href: '/wow/', label: 'WoW' },
   { href: '/mtg/', label: 'MTG' },
+  { href: '/wow/', label: 'WoW' },
   { href: 'https://wow.aethernal.net/', label: 'Server' },
 ];
