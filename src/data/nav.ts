@@ -3,7 +3,10 @@
 export interface NavItem {
   href: string;
   label: string;
-  group?: string; // consecutive items with the same group get a divider and a small label
+  // Consecutive items with the same group get a divider and the group's label, shown as its icon
+  // when it has one.
+  group?: string;
+  groupIcon?: string;
 }
 
 export const SITE = 'https://aethernal.net';
@@ -11,6 +14,6 @@ export const SITE = 'https://aethernal.net';
 export const nav: NavItem[] = [
   { href: '/', label: 'Home' },
   { href: '/mtg/', label: 'MTG' },
-  { href: '/wow/', label: 'Characters', group: 'WoW' },
-  { href: 'https://wow.aethernal.net/', label: 'Server', group: 'WoW' },
+  { href: '/wow/', label: 'Characters', group: 'World of Warcraft', groupIcon: '/images/wow-icon.png' },
+  { href: 'https://wow.aethernal.net/', label: 'Server', group: 'World of Warcraft', groupIcon: '/images/wow-icon.png' },
 ];

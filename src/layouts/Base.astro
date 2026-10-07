@@ -40,7 +40,11 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
         <nav aria-label="Main">
           {nav.map((item, i) => (
             <>
-              {item.group && item.group !== nav[i - 1]?.group && <span class="nav-group">{item.group}</span>}
+              {item.group && item.group !== nav[i - 1]?.group && (
+                <span class="nav-group" title={item.group}>
+                  {item.groupIcon ? <img src={item.groupIcon} alt={item.group} width="20" height="20" /> : item.group}
+                </span>
+              )}
               <a href={item.href} data-same-tab aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
             </>
           ))}
@@ -91,6 +95,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   .brand img { filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.45)); }
   nav { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
   .nav-group {
+    display: flex; align-items: center;
     margin-left: 8px; padding: 2px 4px 2px 14px; border-left: 1px solid var(--border);
     font-family: var(--font-display); font-weight: 700; font-size: 0.72rem;
     letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); opacity: 0.8;
