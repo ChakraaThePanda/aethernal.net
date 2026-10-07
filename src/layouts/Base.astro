@@ -20,7 +20,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#05070d" />
+    <meta name="theme-color" content="#040b0d" />
     <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta property="og:title" content={fullTitle} />
@@ -79,7 +79,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
 <style>
   .site-header {
     position: sticky; top: 0; z-index: 10;
-    background: rgba(5, 7, 13, 0.85);
+    background: rgba(var(--bg-rgb), 0.85);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--border);
   }

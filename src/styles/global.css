@@ -3,11 +3,13 @@
 
 :root {
   color-scheme: dark;
-  --bg: #05070d;
-  --bg-hi: #101827;
-  --panel: #0d1420;
-  --panel-alt: #131c2c;
-  --border: #253a52;
+  /* Dark bluish teal. */
+  --bg: #040b0d;
+  --bg-rgb: 4, 11, 13;
+  --bg-hi: #0d2027;
+  --panel: #0b171c;
+  --panel-alt: #102229;
+  --border: #22434f;
   --border-hi: #6fc3ee;
   --text: #dbe9f5;
   --muted: #8aa0b5;
@@ -109,7 +111,7 @@ a.card:hover, a.card:focus-visible {
 }
 
 /* Accordions on character cards (retail is rendered at build time, Aethernal in the browser). */
-details.acc { background: rgba(5, 7, 13, 0.6); border: 1px solid var(--border); border-radius: 6px; }
+details.acc { background: rgba(var(--bg-rgb), 0.6); border: 1px solid var(--border); border-radius: 6px; }
 details.acc[open] { border-color: rgba(var(--accent-rgb), 0.35); }
 details.acc > summary {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
@@ -129,7 +131,7 @@ details.acc > summary > span:first-child { flex: 1; }
 .char .owner {
   position: absolute; top: 12px; right: 12px; z-index: 1;
   font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--text); background: rgba(5, 7, 13, 0.75);
+  color: var(--text); background: rgba(var(--bg-rgb), 0.75);
   border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px;
 }
 
