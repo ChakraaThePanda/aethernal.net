@@ -2,12 +2,13 @@
 import Base from '../layouts/Base.astro';
 import RetailCharacter from '../components/RetailCharacter.astro';
 import OwnerFilter from '../components/OwnerFilter.astro';
-import { aethernalApi, aethernalCharacters, blizzardCharacters } from '../data/characters';
+import { aethernalApi, blizzardCharacters } from '../data/characters';
 import { CLASS_COLORS } from '../lib/wow';
 import { loadRetail } from '../lib/retail';
 
-// Everyone who owns a tracked character, for the filter buttons.
-const owners = [...new Set([...blizzardCharacters, ...aethernalCharacters].map((c) => c.owner).filter(Boolean))];
+// Everyone who owns a Retail character, for the filter buttons. Aethernal owners come from the
+// realm API and are added once it answers.
+const owners = [...new Set(blizzardCharacters.map((c) => c.owner).filter(Boolean))];
 const retail = loadRetail();
 ---
 <Base title="World of Warcraft" description="Live World of Warcraft character profiles on Retail, WoW Forever and the Aethernal server.">
@@ -29,7 +30,7 @@ const retail = loadRetail();
 
   <section data-filter-group>
     <h2 class="section-title">Aethernal <span id="realm-status" class="realm-status" hidden></span></h2>
-    <div id="aethernal" class="chars" data-api={aethernalApi} data-names={aethernalCharacters.map((c) => c.name).join(',')} data-owners={JSON.stringify(Object.fromEntries(aethernalCharacters.map((c) => [c.name.toLowerCase(), c.owner])))}>
+    <div id="aethernal" class="chars" data-api={aethernalApi}>
       <p class="panel empty muted">Contacting the realm…</p>
     </div>
   </section>
@@ -57,10 +58,8 @@ const retail = loadRetail();
     return h >= 24 ? `${Math.floor(h / 24)}d ${h % 24}h` : `${h}h`;
   };
 
-  const owners = JSON.parse(root.dataset.owners || '{}');
-
   function card(c) {
-    const owner = owners[c.name.toLowerCase()];
+    const owner = c.owner;
     const color = CLASS_COLORS[c.className] || 'var(--text)';
     const gear = (c.equipment || [])
       .map((i) => `<li><span class="slot">${esc(i.slot)}</span>`
@@ -82,6 +81,7 @@ const retail = loadRetail();
               </h3>
               <div class="sub">Level ${c.level} ${esc(c.race)} <span class="cls">${esc(c.className)}</span></div>
               ${c.guild ? `<div class="sub muted">&lt;${esc(c.guild)}&gt;</div>` : ''}
+              ${c.hardcore ? '<span class="hardcore">Hardcore</span>' : ''}
             </div>
           </header>
           <dl class="stats">
@@ -97,7 +97,7 @@ const retail = loadRetail();
 
   async function loadAethernal() {
     try {
-      const res = await fetch(`${root.dataset.api}?names=${encodeURIComponent(root.dataset.names)}`);
+      const res = await fetch(root.dataset.api);
       if (!res.ok) throw new Error(res.status);
       const data = await res.json();
       statusEl.hidden = false;
@@ -106,6 +106,7 @@ const retail = loadRetail();
       root.innerHTML = data.characters.length
         ? data.characters.map(card).join('')
         : '<p class="panel empty muted">No characters to show yet.</p>';
+      window.addFilterOwners?.(data.characters.map((c) => c.owner));
       window.applyOwnerFilter?.();
       window.$WowheadPower?.refreshLinks();
     } catch {
@@ -141,6 +142,7 @@ const retail = loadRetail();
   }
   #aethernal :global(.cname) { margin: 0; font-size: 1.35rem; color: var(--class); display: flex; align-items: center; gap: 8px; }
   #aethernal :global(.sub) { font-size: 0.9rem; }
+  #aethernal :global(.hardcore) { margin-top: 6px; }
   #aethernal :global(.cls) { display: block; color: var(--class); font-weight: 600; }
   #aethernal :global(.dot) { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); opacity: 0.5; }
   #aethernal :global(.dot.on) { background: var(--ok); opacity: 1; box-shadow: 0 0 8px var(--ok); }
