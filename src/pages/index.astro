@@ -24,7 +24,13 @@ import { destinations } from '../data/links';
   .hero { text-align: center; margin-bottom: 32px; }
   .banner {
     width: min(520px, 90%); height: auto; margin: 0 auto;
-    filter: drop-shadow(0 0 22px rgba(79, 199, 255, 0.3));
+    filter: drop-shadow(0 0 22px rgba(79, 199, 255, 0.35));
+    animation: frostGlow 4s ease-in-out infinite;
+  }
+  /* Same pulse as the logo on wow.aethernal.net. */
+  @keyframes frostGlow {
+    0%, 100% { filter: drop-shadow(0 0 16px rgba(79, 199, 255, 0.3)); }
+    50% { filter: drop-shadow(0 0 30px rgba(79, 199, 255, 0.6)); }
   }
   .hero .lead { margin: 0 auto; }
 </style>
