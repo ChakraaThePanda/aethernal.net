@@ -106,3 +106,20 @@ a.card:hover, a.card:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* Accordions on character cards (retail is rendered at build time, Aethernal in the browser). */
+details.acc { background: rgba(5, 7, 13, 0.6); border: 1px solid var(--border); border-radius: 6px; }
+details.acc[open] { border-color: rgba(79, 199, 255, 0.35); }
+details.acc > summary {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 8px 12px; cursor: pointer; list-style: none; font-weight: 500; font-size: 0.9rem;
+}
+details.acc > summary::-webkit-details-marker { display: none; }
+details.acc > summary::before { content: '\25B8'; color: var(--accent); margin-right: -4px; transition: transform 0.15s; }
+details.acc[open] > summary::before { transform: rotate(90deg); }
+details.acc > summary > span:first-child { flex: 1; }
+.acc .sum-value { font-weight: 700; color: var(--accent); white-space: nowrap; }
+.acc .gear { list-style: none; margin: 0; padding: 4px 0; font-size: 0.85rem; border-top: 1px solid var(--border); }
+.acc .gear li { display: grid; grid-template-columns: 90px 1fr auto; gap: 8px; padding: 4px 12px; }
+.acc .gear a { text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acc .gear .slot, .acc .gear .ilvl { color: var(--muted); }

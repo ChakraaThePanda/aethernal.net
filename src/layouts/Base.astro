@@ -62,6 +62,20 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
         <a href="https://wow.aethernal.net/">WoW Server</a>
       </div>
     </footer>
+    <script is:inline>
+      // Every link to another site opens in a new tab, including ones added later by page scripts.
+      const markExternal = (a) => {
+        if (a.host && a.host !== location.host) {
+          a.target = '_blank';
+          a.rel = 'noopener';
+        }
+      };
+      document.querySelectorAll('a[href]').forEach(markExternal);
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest?.('a[href]');
+        if (a) markExternal(a);
+      }, true);
+    </script>
   </body>
 </html>
 

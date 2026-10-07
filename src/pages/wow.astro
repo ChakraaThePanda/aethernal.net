@@ -12,9 +12,9 @@ const retailFile = `${process.cwd()}/src/data/generated/retail.json`;
 const retail = existsSync(retailFile) ? JSON.parse(readFileSync(retailFile, 'utf8')) : null;
 const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
 ---
-<Base title="Characters" description="Live World of Warcraft character profiles for retail and the Aethernal server.">
-  <h1>Characters</h1>
-  <p class="lead">Our characters on the live servers and on Aethernal.</p>
+<Base title="World of Warcraft" description="Live World of Warcraft character profiles on Retail, WoW Forever and the Aethernal server.">
+  <h1>World of Warcraft</h1>
+  <p class="lead">Our characters on Retail, WoW Forever and Aethernal.</p>
 
   <section>
     <h2 class="section-title">Retail</h2>
@@ -38,7 +38,6 @@ const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
     <div id="aethernal" class="chars" data-api={aethernalApi} data-names={aethernalCharacters.join(',')}>
       <p class="panel empty muted">Contacting the realm…</p>
     </div>
-    <p class="small muted note">Live from <a href="https://wow.aethernal.net/">wow.aethernal.net</a>.</p>
   </section>
 
   <script is:inline slot="head">
@@ -95,11 +94,10 @@ const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
           </header>
           <dl class="stats">
             ${c.itemLevel ? `<div><dt>Item level</dt><dd>${c.itemLevel}</dd></div>` : ''}
-            <div><dt>Achievements</dt><dd>${c.achievements ?? 0}</dd></div>
             <div><dt>Played</dt><dd>${played(c.playedSeconds || 0)}</dd></div>
             ${c.honorableKills ? `<div><dt>Honor kills</dt><dd>${c.honorableKills}</dd></div>` : ''}
           </dl>
-          ${gear ? `<details><summary>Equipment</summary><ul class="gear">${gear}</ul></details>` : ''}
+          ${gear ? `<details class="acc"><summary><span>Equipment</span></summary><ul class="gear">${gear}</ul></details>` : ''}
         </div>
       </article>`;
   }
@@ -155,9 +153,4 @@ const fetchedAt = retail ? new Date(retail.fetchedAt) : null;
   #aethernal :global(.stats) { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0; }
   #aethernal :global(.stats dt) { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
   #aethernal :global(.stats dd) { margin: 0; font-size: 1.25rem; font-weight: 700; }
-  #aethernal :global(details summary) { cursor: pointer; color: var(--accent); font-weight: 500; font-size: 0.9rem; }
-  #aethernal :global(.gear) { list-style: none; margin: 8px 0 0; padding: 0; font-size: 0.85rem; background: rgba(5, 7, 13, 0.6); border-radius: 6px; }
-  #aethernal :global(.gear li) { display: grid; grid-template-columns: 90px 1fr auto; gap: 8px; padding: 4px 10px; }
-  #aethernal :global(.gear a) { text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #aethernal :global(.slot), #aethernal :global(.ilvl) { color: var(--muted); }
 </style>

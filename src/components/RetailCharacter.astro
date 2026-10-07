@@ -8,9 +8,17 @@ interface Props {
 const { c } = Astro.props;
 const color = classColor(c.className);
 const lastSeen = c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA', { dateStyle: 'medium' }) : null;
-const difficultyOrder = ['MYTHIC', 'HEROIC', 'NORMAL', 'LFR'];
-const bestMode = (modes: any[]) =>
-  difficultyOrder.map((d) => modes.find((m) => m.difficulty === d && m.killed > 0)).find(Boolean);
+
+const DIFF_SHORT: Record<string, string> = { LFR: 'LFR', NORMAL: 'N', HEROIC: 'H', MYTHIC: 'M' };
+// Headline for the collapsed raid bar: the newest raid's hardest difficulty with any kills.
+const raids = c.raids?.raids ?? [];
+const headline = (() => {
+  const raid = raids[0];
+  if (!raid) return null;
+  const best = [...raid.progress].reverse().find((p: any) => p.killed > 0);
+  return best ? `${best.killed}/${best.total} ${DIFF_SHORT[best.difficulty]}` : `0/${raid.progress[0]?.total ?? 0}`;
+})();
+const mplus = c.mythicPlus;
 ---
 {c.error ? (
   <article class="char panel">
@@ -36,38 +44,76 @@ const bestMode = (modes: any[]) =>
 
       <dl class="stats">
         {c.itemLevel && <div><dt>Item level</dt><dd>{c.itemLevel}</dd></div>}
-        {c.mythicRating && <div><dt>M+ rating</dt><dd style={c.mythicRating.color ? `color: ${c.mythicRating.color}` : undefined}>{c.mythicRating.value}</dd></div>}
-        {c.achievementPoints != null && <div><dt>Achievements</dt><dd>{c.achievementPoints.toLocaleString('en-US')}</dd></div>}
+        {mplus && <div><dt>M+ rating</dt><dd style={mplus.color ? `color: ${mplus.color}` : undefined}>{mplus.value}</dd></div>}
       </dl>
 
-      {c.raids?.length > 0 && (
-        <ul class="raids">
-          {c.raids.map((r: any) => {
-            const best = bestMode(r.modes);
-            return (
-              <li>
-                <span>{r.name}</span>
-                <span class="prog">{best ? `${best.killed}/${best.total} ${best.label.charAt(0)}` : 'Not started'}</span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <div class="accordions">
+        {mplus && (
+          <details class="acc">
+            <summary>
+              <span>Mythic+</span>
+              <span class="sum-value">{mplus.runs.length} {mplus.runs.length === 1 ? 'dungeon' : 'dungeons'}</span>
+            </summary>
+            {mplus.runs.length ? (
+              <table class="rows">
+                <tbody>
+                  {mplus.runs.map((r: any) => (
+                    <tr>
+                      <td>{r.dungeon}</td>
+                      <td class={r.timed ? 'key timed' : 'key depleted'} title={r.timed ? 'Timed' : 'Over time'}>+{r.level}</td>
+                      <td class="num" style={r.color ? `color: ${r.color}` : undefined}>{r.rating}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p class="muted small pad">No runs this season yet.</p>
+            )}
+          </details>
+        )}
 
-      {c.equipment?.length > 0 && (
-        <details>
-          <summary>Equipment</summary>
-          <ul class="gear">
-            {c.equipment.filter((i: any) => i.slot !== 'Shirt' && i.slot !== 'Tabard').map((i: any) => (
-              <li>
-                <span class="slot">{i.slot}</span>
-                <a href={`https://www.wowhead.com/item=${i.id}`} target="_blank" rel="noopener" style={`color: ${qualityVar(i.quality)}`}>{i.name}</a>
-                <span class="ilvl">{i.itemLevel}</span>
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+        {raids.length > 0 && (
+          <details class="acc">
+            <summary>
+              <span>Raids <span class="muted small">· {c.raids.expansion}</span></span>
+              <span class="sum-value">{headline}</span>
+            </summary>
+            <table class="rows raids">
+              <thead>
+                <tr>
+                  <th></th>
+                  {raids[0].progress.map((p: any) => <th class="num">{DIFF_SHORT[p.difficulty]}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {raids.map((r: any) => (
+                  <tr>
+                    <td>{r.name}</td>
+                    {r.progress.map((p: any) => (
+                      <td class:list={['num', { done: p.total > 0 && p.killed === p.total, none: p.killed === 0 }]}>{p.killed}/{p.total}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </details>
+        )}
+
+        {c.equipment?.length > 0 && (
+          <details class="acc">
+            <summary><span>Equipment</span></summary>
+            <ul class="gear">
+              {c.equipment.filter((i: any) => i.slot !== 'Shirt' && i.slot !== 'Tabard').map((i: any) => (
+                <li>
+                  <span class="slot">{i.slot}</span>
+                  <a href={`https://www.wowhead.com/item=${i.id}`} target="_blank" rel="noopener" style={`color: ${qualityVar(i.quality)}`}>{i.name}</a>
+                  <span class="ilvl">{i.itemLevel}</span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+      </div>
 
       <footer class="small muted">
         {lastSeen && <span>Last seen {lastSeen}</span>}
@@ -84,10 +130,11 @@ const bestMode = (modes: any[]) =>
     border-top: 3px solid var(--class, var(--border));
   }
   .render {
-    position: absolute; inset: 0 -20% 0 35%;
+    position: absolute; inset: 0 -20% auto 35%; height: 340px;
     background: center top / cover no-repeat;
     opacity: 0.35;
-    mask-image: linear-gradient(90deg, transparent, #000 40%);
+    mask-image: linear-gradient(90deg, transparent, #000 40%), linear-gradient(180deg, #000 60%, transparent);
+    mask-composite: intersect;
     pointer-events: none;
   }
   .body { position: relative; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
@@ -99,13 +146,20 @@ const bestMode = (modes: any[]) =>
   .stats { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0; }
   .stats dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
   .stats dd { margin: 0; font-size: 1.25rem; font-weight: 700; }
-  .raids { list-style: none; margin: 0; padding: 0; font-size: 0.9rem; }
-  .raids li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-bottom: 1px solid var(--border); }
-  .prog { font-weight: 600; color: var(--accent); white-space: nowrap; }
-  details summary { cursor: pointer; color: var(--accent); font-weight: 500; font-size: 0.9rem; }
-  .gear { list-style: none; margin: 8px 0 0; padding: 0; font-size: 0.85rem; background: rgba(5, 7, 13, 0.6); border-radius: 6px; }
-  .gear li { display: grid; grid-template-columns: 90px 1fr auto; gap: 8px; padding: 4px 10px; }
-  .gear a { text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .slot, .ilvl { color: var(--muted); }
+
+  .accordions { display: flex; flex-direction: column; gap: 8px; }
+
+  .rows { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .rows td, .rows th { padding: 5px 12px; border-top: 1px solid var(--border); }
+  .rows th { color: var(--muted); font-weight: 600; font-size: 0.75rem; }
+  .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .key { text-align: right; font-weight: 600; white-space: nowrap; }
+  .key.timed { color: var(--accent); }
+  .key.depleted { color: var(--muted); }
+  .raids td.num { padding-left: 4px; padding-right: 10px; }
+  .raids .done { color: var(--ok); font-weight: 600; }
+  .raids .none { color: var(--muted); }
+  .pad { padding: 4px 12px 10px; margin: 0; }
+
   footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 </style>
