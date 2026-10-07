@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+import { sheets } from '../data/links';
+---
+<Base title="Spreadsheets" description="Our Google Sheets: trackers, collections and more.">
+  <h1>Spreadsheets</h1>
+  <p class="lead">Trackers and other sheets. They open in Google Sheets.</p>
+  <div class="grid">
+    {sheets.map((s) => (
+      <a class="card panel" href={s.href} target="_blank" rel="noopener">
+        <span class="tag">Sheet</span>
+        <span class="card-title">{s.title} <span class="ext">↗</span></span>
+        <p class="card-desc">{s.description}</p>
+      </a>
+    ))}
+  </div>
+</Base>

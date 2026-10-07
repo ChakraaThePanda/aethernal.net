@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+import DeckCard from '../components/DeckCard.astro';
+import { players } from '../data/decks';
+---
+<Base title="MTG Decks" description="Commander decks from the whole group, on Archidekt.">
+  <h1>MTG Decks</h1>
+  <p class="lead">Our Commander decks. Each one opens on Archidekt.</p>
+
+  <nav class="jump pill-list" aria-label="Players">
+    {players.map((p) => <a class="pill" href={`#${p.name.toLowerCase()}`}>{p.name}</a>)}
+  </nav>
+
+  {players.map((p) => (
+    <section id={p.name.toLowerCase()}>
+      <h2 class="section-title">{p.name}</h2>
+      {p.extras && (
+        <ul class="pill-list extras">
+          {p.extras.map((x) => <li><a class="pill" href={x.href} target="_blank" rel="noopener">{x.title} <span class="ext">↗</span></a></li>)}
+        </ul>
+      )}
+      <div class="decks">
+        {p.decks.map((d) => <DeckCard deck={d} />)}
+      </div>
+      {p.precons && p.precons.length > 0 && (
+        <>
+          <h3>Precons</h3>
+          <div class="decks precons">
+            {p.precons.map((d) => <DeckCard deck={d} compact />)}
+          </div>
+        </>
+      )}
+    </section>
+  ))}
+</Base>
+
+<style>
+  section { scroll-margin-top: 80px; }
+  .jump { margin-bottom: 8px; }
+  .extras { margin-bottom: 16px; }
+  .decks { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
+  .precons { grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr)); gap: 10px; }
+  @media (max-width: 480px) {
+    .decks, .precons { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  }
+</style>

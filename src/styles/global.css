@@ -1,0 +1,108 @@
+/* Palette matches the Aethernal account panel (wow.aethernal.net) so the two feel like one site. */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  color-scheme: dark;
+  --bg: #05070d;
+  --bg-hi: #101827;
+  --panel: #0d1420;
+  --panel-alt: #131c2c;
+  --border: #253a52;
+  --border-hi: #6fc3ee;
+  --text: #dbe9f5;
+  --muted: #8aa0b5;
+  --accent: #4fc7ff;
+  --accent-soft: rgba(79, 199, 255, 0.12);
+  --ok: #3fb950;
+  --bad: #ff6a6a;
+  --radius: 8px;
+  --font-body: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Cinzel', Georgia, serif;
+
+  /* Item quality colors */
+  --q0: #9d9d9d; --q1: #ffffff; --q2: #1eff00; --q3: #0070dd;
+  --q4: #a335ee; --q5: #ff8000; --q6: #e6cc80; --q7: #00ccff;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at top, var(--bg-hi) 0%, var(--bg) 60%) fixed, var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: var(--accent); }
+img { max-width: 100%; display: block; }
+
+.container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+main { flex: 1; padding: 32px 0 64px; }
+
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: 0.03em; line-height: 1.25; }
+h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); color: var(--accent); margin: 0 0 8px; text-shadow: 0 0 18px rgba(79, 199, 255, 0.25); }
+h2 { font-size: 1.3rem; margin: 40px 0 16px; }
+h3 { font-size: 1rem; color: var(--muted); margin: 24px 0 12px; }
+.lead { color: var(--muted); margin: 0 0 24px; max-width: 60ch; }
+
+.section-title { display: flex; align-items: center; gap: 12px; }
+.section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+
+.ornate-divider { display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--accent); font-size: 0.7rem; margin: 16px 0; }
+.ornate-divider::before, .ornate-divider::after { content: ''; height: 1px; width: 64px; background: linear-gradient(90deg, transparent, var(--border-hi)); }
+.ornate-divider::after { background: linear-gradient(90deg, var(--border-hi), transparent); }
+
+.panel {
+  background: linear-gradient(180deg, var(--panel-alt), var(--panel));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 0 0 1px rgba(79, 199, 255, 0.05) inset, 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+
+.card {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 18px 20px;
+  color: var(--text); text-decoration: none;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+a.card:hover, a.card:focus-visible {
+  border-color: var(--border-hi);
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px rgba(79, 199, 255, 0.15) inset, 0 8px 22px rgba(0, 0, 0, 0.5), 0 0 18px rgba(79, 199, 255, 0.12);
+}
+.card-title { font-weight: 600; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
+.card-desc { color: var(--muted); font-size: 0.9rem; margin: 0; }
+.ext { font-size: 0.8em; color: var(--muted); }
+
+.tag {
+  align-self: flex-start;
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-soft);
+  border: 1px solid rgba(79, 199, 255, 0.25); border-radius: 999px; padding: 1px 10px;
+}
+
+.pill-list { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; list-style: none; }
+.pill {
+  display: inline-block; padding: 6px 14px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--panel);
+  color: var(--text); text-decoration: none; font-size: 0.9rem;
+}
+.pill:hover, .pill:focus-visible { border-color: var(--border-hi); color: var(--accent); }
+
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}

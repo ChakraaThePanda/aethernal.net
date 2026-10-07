@@ -1,0 +1,111 @@
+---
+import { classColor, qualityVar } from '../lib/wow';
+
+interface Props {
+  c: any; // one entry from src/data/generated/retail.json
+}
+
+const { c } = Astro.props;
+const color = classColor(c.className);
+const lastSeen = c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA', { dateStyle: 'medium' }) : null;
+const difficultyOrder = ['MYTHIC', 'HEROIC', 'NORMAL', 'LFR'];
+const bestMode = (modes: any[]) =>
+  difficultyOrder.map((d) => modes.find((m) => m.difficulty === d && m.killed > 0)).find(Boolean);
+---
+{c.error ? (
+  <article class="char panel">
+    <div class="body">
+      <h3 class="cname">{c.name} <span class="muted small">{c.realm}</span></h3>
+      <p class="muted">{c.error}</p>
+    </div>
+  </article>
+) : (
+  <article class="char panel" style={`--class: ${color}`}>
+    {c.render && <div class="render" style={`background-image: url('${c.render}')`} role="img" aria-label={`${c.name} character render`}></div>}
+    <div class="body">
+      <header>
+        {c.avatar && <img class="avatar" src={c.avatar} alt="" width="56" height="56" loading="lazy" />}
+        <div>
+          <h3 class="cname">{c.name}</h3>
+          <div class="sub">
+            Level {c.level} {c.race} <span class="cls">{c.spec ? `${c.spec} ` : ''}{c.className}</span>
+          </div>
+          <div class="sub muted">{c.realm}{c.guild && <> · &lt;{c.guild}&gt;</>}</div>
+        </div>
+      </header>
+
+      <dl class="stats">
+        {c.itemLevel && <div><dt>Item level</dt><dd>{c.itemLevel}</dd></div>}
+        {c.mythicRating && <div><dt>M+ rating</dt><dd style={c.mythicRating.color ? `color: ${c.mythicRating.color}` : undefined}>{c.mythicRating.value}</dd></div>}
+        {c.achievementPoints != null && <div><dt>Achievements</dt><dd>{c.achievementPoints.toLocaleString('en-US')}</dd></div>}
+      </dl>
+
+      {c.raids?.length > 0 && (
+        <ul class="raids">
+          {c.raids.map((r: any) => {
+            const best = bestMode(r.modes);
+            return (
+              <li>
+                <span>{r.name}</span>
+                <span class="prog">{best ? `${best.killed}/${best.total} ${best.label.charAt(0)}` : 'Not started'}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {c.equipment?.length > 0 && (
+        <details>
+          <summary>Equipment</summary>
+          <ul class="gear">
+            {c.equipment.filter((i: any) => i.slot !== 'Shirt' && i.slot !== 'Tabard').map((i: any) => (
+              <li>
+                <span class="slot">{i.slot}</span>
+                <a href={`https://www.wowhead.com/item=${i.id}`} target="_blank" rel="noopener" style={`color: ${qualityVar(i.quality)}`}>{i.name}</a>
+                <span class="ilvl">{i.itemLevel}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+
+      <footer class="small muted">
+        {lastSeen && <span>Last seen {lastSeen}</span>}
+        <a href={c.profileUrl} target="_blank" rel="noopener">Armory ↗</a>
+      </footer>
+    </div>
+  </article>
+)}
+
+<style>
+  .char {
+    position: relative; overflow: hidden;
+    display: grid; grid-template-columns: minmax(0, 1fr);
+    border-top: 3px solid var(--class, var(--border));
+  }
+  .render {
+    position: absolute; inset: 0 -20% 0 35%;
+    background: center top / cover no-repeat;
+    opacity: 0.35;
+    mask-image: linear-gradient(90deg, transparent, #000 40%);
+    pointer-events: none;
+  }
+  .body { position: relative; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+  header { display: flex; gap: 14px; align-items: center; }
+  .avatar { border-radius: 8px; border: 2px solid var(--class); flex-shrink: 0; }
+  .cname { margin: 0; font-size: 1.35rem; color: var(--class, var(--text)); }
+  .sub { font-size: 0.9rem; }
+  .cls { color: var(--class); font-weight: 600; }
+  .stats { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0; }
+  .stats dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .stats dd { margin: 0; font-size: 1.25rem; font-weight: 700; }
+  .raids { list-style: none; margin: 0; padding: 0; font-size: 0.9rem; }
+  .raids li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .prog { font-weight: 600; color: var(--accent); white-space: nowrap; }
+  details summary { cursor: pointer; color: var(--accent); font-weight: 500; font-size: 0.9rem; }
+  .gear { list-style: none; margin: 8px 0 0; padding: 0; font-size: 0.85rem; background: rgba(5, 7, 13, 0.6); border-radius: 6px; }
+  .gear li { display: grid; grid-template-columns: 90px 1fr auto; gap: 8px; padding: 4px 10px; }
+  .gear a { text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .slot, .ilvl { color: var(--muted); }
+  footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+</style>

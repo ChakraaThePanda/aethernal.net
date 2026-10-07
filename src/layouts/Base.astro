@@ -1,0 +1,94 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = 'Aethernal: our WoW server, characters, MTG decks and other projects.' } = Astro.props;
+const fullTitle = title ? `${title} · Aethernal` : 'Aethernal';
+const path = Astro.url.pathname;
+
+const nav = [
+  { href: '/', label: 'Home' },
+  { href: '/wow/', label: 'WoW' },
+  { href: '/mtg/', label: 'MTG' },
+  { href: '/sheets/', label: 'Sheets' },
+];
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#05070d" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="https://aethernal.net/images/banner.webp" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <slot name="head" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="/" class="brand">
+          <img src="/images/logo.webp" alt="" width="36" height="36" />
+          <span>Aethernal</span>
+        </a>
+        <nav aria-label="Main">
+          {nav.map((item) => (
+            <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+          ))}
+        </nav>
+      </div>
+    </header>
+    <main>
+      <div class="container">
+        <slot />
+      </div>
+    </main>
+    <footer class="site-footer">
+      <div class="container">
+        <span>Aethernal</span>
+        <span class="dot" aria-hidden="true">&#9670;</span>
+        <a href="https://github.com/ChakraaThePanda">GitHub</a>
+        <span class="dot" aria-hidden="true">&#9670;</span>
+        <a href="https://wow.aethernal.net/">WoW Server</a>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(5, 7, 13, 0.85);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.05em; }
+  .brand img { filter: drop-shadow(0 0 6px rgba(79, 199, 255, 0.45)); }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav a {
+    color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.95rem;
+    padding: 6px 12px; border-radius: 6px;
+  }
+  nav a:hover { color: var(--text); background: var(--accent-soft); }
+  nav a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
+  @media (max-width: 480px) {
+    .header-inner { justify-content: center; padding-top: 8px; padding-bottom: 8px; gap: 6px; }
+    nav a { padding: 6px 10px; }
+  }
+  .site-footer { border-top: 1px solid var(--border); padding: 20px 0; color: var(--muted); font-size: 0.85rem; }
+  .site-footer .container { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .site-footer a { color: var(--muted); text-decoration: none; }
+  .site-footer a:hover { color: var(--accent); }
+  .site-footer .dot { color: var(--accent); font-size: 0.6rem; align-self: center; }
+</style>

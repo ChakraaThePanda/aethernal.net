@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro';
+import { destinations } from '../data/links';
+---
+<Base>
+  <section class="hero">
+    <img class="banner" src="/images/banner.webp" alt="Aethernal" width="900" height="360" />
+    <div class="ornate-divider" aria-hidden="true">&#9670;</div>
+    <p class="lead">Our corner of the internet: a WoW private server, our characters, Magic decks and assorted projects.</p>
+  </section>
+
+  <div class="grid">
+    {destinations.map((d) => (
+      <a class="card panel" href={d.href} target={d.external ? '_blank' : undefined} rel={d.external ? 'noopener' : undefined}>
+        <span class="tag">{d.tag}</span>
+        <span class="card-title">{d.title} {d.external && <span class="ext">↗</span>}</span>
+        <p class="card-desc">{d.description}</p>
+      </a>
+    ))}
+  </div>
+</Base>
+
+<style>
+  .hero { text-align: center; margin-bottom: 32px; }
+  .banner {
+    width: min(520px, 90%); height: auto; margin: 0 auto;
+    filter: drop-shadow(0 0 22px rgba(79, 199, 255, 0.3));
+  }
+  .hero .lead { margin: 0 auto; }
+</style>
