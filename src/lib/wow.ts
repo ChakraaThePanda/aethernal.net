@@ -22,3 +22,8 @@ export const classColor = (name: string) => CLASS_COLORS[name] ?? 'var(--text)';
 const QUALITY_TYPES = ['POOR', 'COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'ARTIFACT', 'HEIRLOOM'];
 export const qualityVar = (q: string | number) =>
   `var(--q${typeof q === 'number' ? q : Math.max(0, QUALITY_TYPES.indexOf(q))})`;
+
+// Wowhead icons for characters without a Blizzard render (the Aethernal server).
+const ICONS = 'https://wow.zamimg.com/images/wow/icons/large';
+const slug = (s: string) => s.toLowerCase().replace(/\s+/g, '');
+export const classIconUrl = (className: string) => `${ICONS}/classicon_${slug(className)}.jpg`;

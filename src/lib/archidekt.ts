@@ -10,6 +10,7 @@ export interface Commander {
 export interface DeckInfo {
   art: string | null;
   commanders: Commander[];
+  updatedAt: string | null;
 }
 
 const CONCURRENCY = 2;
@@ -48,13 +49,13 @@ async function fetchDeck(id: number): Promise<DeckInfo> {
       const commanders = (deck.cards ?? [])
         .filter((c: any) => (c.categories ?? []).includes('Commander'))
         .map((c: any) => ({ name: c.card.oracleCard.name, image: scryfallImage(c.card.uid) }));
-      return { art: deck.customFeatured || deck.featured || null, commanders };
+      return { art: deck.customFeatured || deck.featured || null, commanders, updatedAt: deck.updatedAt ?? null };
     } catch {
       await sleep(1000 * 2 ** attempt);
     }
   }
   console.warn(`[archidekt] could not load deck ${id}`);
-  return { art: null, commanders: [] };
+  return { art: null, commanders: [], updatedAt: null };
 }
 
 export function deckInfo(id: number): Promise<DeckInfo> {

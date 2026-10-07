@@ -1,30 +1,199 @@
 ---
 import Base from '../layouts/Base.astro';
-import { destinations } from '../data/links';
+import DeckCard from '../components/DeckCard.astro';
+import { extraLinks } from '../data/links';
+import { players } from '../data/decks';
+import { aethernalApi, aethernalCharacters } from '../data/characters';
+import { deckInfo } from '../lib/archidekt';
+import { recentRepos } from '../lib/github';
+import { loadRetail } from '../lib/retail';
+import { classColor } from '../lib/wow';
+
+const PANEL = 'https://wow.aethernal.net';
+
+const retail = (loadRetail()?.characters ?? []).filter((c) => !c.error);
+
+// The four most recently edited decks across everyone.
+const allDecks = players.flatMap((p) => [...p.decks, ...(p.precons ?? [])].map((d) => ({ deck: d, owner: p.name })));
+const dated = await Promise.all(allDecks.map(async (d) => ({ ...d, updatedAt: (await deckInfo(d.deck.id)).updatedAt })));
+const recentDecks = dated
+  .filter((d) => d.updatedAt)
+  .sort((a, b) => b.updatedAt!.localeCompare(a.updatedAt!))
+  .slice(0, 4);
+
+const repos = await recentRepos(4);
+const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
 ---
 <Base>
   <section class="hero">
     <img class="banner" src="/images/banner.webp" alt="Aethernal" width="872" height="512" />
     <div class="ornate-divider" aria-hidden="true">&#9670;</div>
-    <p class="lead">Our corner of the internet: a WoW private server, our characters, Magic decks and assorted projects.</p>
+    <p class="lead">Our WoW characters, our own Wrath of the Lich King realm, Commander decks and other projects.</p>
   </section>
 
-  <div class="grid">
-    {destinations.map((d) => (
-      <a class="card panel" href={d.href} target={d.external ? '_blank' : undefined} rel={d.external ? 'noopener' : undefined} data-same-tab={d.external ? undefined : ''}>
-        <span class="tag">{d.tag}</span>
-        <span class="card-title">{d.title} {d.external && <span class="ext">↗</span>}</span>
-        <p class="card-desc">{d.description}</p>
-      </a>
-    ))}
+  <div class="duo">
+    <section class="panel box realm">
+      <div class="box-head">
+        <h2>Aethernal realm</h2>
+        <span id="realm-status" class="status">Checking…</span>
+      </div>
+      <p class="muted">Our own Wrath of the Lich King 3.3.5a server. Free to join: make an account and set your realmlist.</p>
+      <dl class="realm-stats" hidden>
+        <div><dt>Players online</dt><dd id="realm-players"></dd></div>
+        <div><dt>Bots online</dt><dd id="realm-bots"></dd></div>
+      </dl>
+      <div id="realmlist" class="realmlist" hidden>
+        <span class="muted small">realmlist.wtf</span>
+        <code></code>
+        <button type="button" class="copy">Copy</button>
+      </div>
+      <ul id="realm-features" class="features" hidden></ul>
+      <div class="actions">
+        <a class="btn primary" href={`${PANEL}/register`} data-same-tab>Create an account</a>
+        <a class="btn" href={`${PANEL}/`} data-same-tab>Log in</a>
+      </div>
+    </section>
+
+    <section class="panel box">
+      <div class="box-head">
+        <h2>Characters</h2>
+        <a class="more" href="/wow/">All characters →</a>
+      </div>
+      <ul class="roster">
+        {retail.map((c) => (
+          <li style={`--class: ${classColor(c.className)}`}>
+            {c.avatar ? <img class="portrait" src={c.avatar} alt="" width="36" height="36" loading="lazy" /> : <span class="portrait"></span>}
+            <span class="who">
+              <span class="cname">{c.name}</span>
+              <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · Retail</span>
+            </span>
+            {c.itemLevel && <span class="ilvl" title="Item level">{c.itemLevel}</span>}
+            {c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}
+          </li>
+        ))}
+        {aethernalCharacters.map((c) => (
+          <li data-aethernal={c.name.toLowerCase()}>
+            <span class="portrait"></span>
+            <span class="who">
+              <span class="cname">{c.name}</span>
+              <span class="sub">Aethernal</span>
+            </span>
+            <span class="ilvl" title="Item level"></span>
+            {c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
   </div>
+
+  {recentDecks.length > 0 && (
+    <section>
+      <div class="section-head">
+        <h2 class="section-title">Recently updated decks</h2>
+        <a class="more" href="/mtg/">All decks →</a>
+      </div>
+      <div class="decks">
+        {recentDecks.map((d) => <DeckCard deck={d.deck} owner={d.owner} />)}
+      </div>
+    </section>
+  )}
+
+  {repos.length > 0 && (
+    <section>
+      <div class="section-head">
+        <h2 class="section-title">Latest projects</h2>
+        <a class="more" href="https://github.com/ChakraaThePanda">All on GitHub →</a>
+      </div>
+      <div class="repos">
+        {repos.map((r) => (
+          <a class="card panel repo" href={r.url}>
+            <span class="card-title">{r.name.replace(/-/g, ' ')}</span>
+            {r.description && <p class="card-desc">{r.description}</p>}
+            <span class="meta">{r.language && <span>{r.language}</span>}<span>Updated {shortDate(r.pushedAt)}</span></span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {extraLinks.length > 0 && (
+    <nav class="extra pill-list" aria-label="More">
+      {extraLinks.map((l) => <a class="pill" href={l.href}>{l.title} <span class="ext">↗</span></a>)}
+    </nav>
+  )}
+
+  <div id="aethernal-api" data-api={aethernalApi} data-names={aethernalCharacters.map((c) => c.name).join(',')} hidden></div>
 </Base>
 
+<script>
+  import { classColor, classIconUrl } from '../lib/wow';
+
+  // Live realm status and Aethernal characters from the account panel's public API.
+  const api = document.getElementById('aethernal-api')!;
+  const status = document.getElementById('realm-status')!;
+
+  async function load() {
+    try {
+      const res = await fetch(`${api.dataset.api}?names=${encodeURIComponent(api.dataset.names!)}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      status.className = `status ${data.realm.online ? 'on' : 'off'}`;
+      status.textContent = data.realm.online ? 'Online' : 'Offline';
+      const r = data.realm;
+      if (r.playersOnline != null) {
+        document.getElementById('realm-players')!.textContent = String(r.playersOnline);
+        document.getElementById('realm-bots')!.textContent = String(r.botsOnline ?? 0);
+        document.querySelector<HTMLElement>('.realm-stats')!.hidden = false;
+      }
+      if (r.realmlist) {
+        const box = document.getElementById('realmlist')!;
+        box.querySelector('code')!.textContent = `set realmlist ${r.realmlist}`;
+        box.hidden = false;
+      }
+      if (r.features?.length) {
+        const ul = document.getElementById('realm-features')!;
+        ul.replaceChildren(...r.features.map((f: string) => Object.assign(document.createElement('li'), { textContent: f })));
+        ul.hidden = false;
+      }
+      for (const c of data.characters) {
+        const li = document.querySelector<HTMLElement>(`[data-aethernal="${c.name.toLowerCase()}"]`);
+        if (!li) continue;
+        li.style.setProperty('--class', classColor(c.className));
+        const portrait = li.querySelector('.portrait')!;
+        if (portrait.tagName !== 'IMG') {
+          const img = document.createElement('img');
+          img.className = 'portrait';
+          img.alt = '';
+          img.width = img.height = 36;
+          portrait.replaceWith(img);
+        }
+        li.querySelector<HTMLImageElement>('img.portrait')!.src = classIconUrl(c.className);
+        li.querySelector('.sub')!.textContent = `${c.level} ${c.className} · Aethernal`;
+        li.querySelector('.ilvl')!.textContent = c.itemLevel ?? '';
+        li.classList.toggle('online', c.online);
+      }
+    } catch {
+      status.className = 'status off';
+      status.textContent = 'Unreachable';
+    }
+  }
+  load();
+  setInterval(load, 60_000);
+
+  document.querySelector('#realmlist .copy')!.addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    try {
+      await navigator.clipboard.writeText(document.querySelector('#realmlist code')!.textContent ?? '');
+      btn.textContent = 'Copied';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+    } catch { /* clipboard blocked: the text is still selectable */ }
+  });
+</script>
+
 <style>
-  /* 32px main padding + 24px = banner 56px below the menu, same as on wow.aethernal.net. */
-  .hero { text-align: center; margin: 24px 0 32px; }
+  .hero { text-align: center; margin: 24px 0 36px; }
   .banner {
-    /* 436px wide = 256px tall. */
+    /* 436px wide = 256px tall. The file is 2x for sharp high-DPI rendering. */
     width: min(436px, 90%); height: auto; margin: 0 auto;
     filter: drop-shadow(0 0 22px rgba(var(--accent-rgb), 0.35));
     animation: frostGlow 4s ease-in-out infinite;
@@ -35,4 +204,80 @@ import { destinations } from '../data/links';
     50% { filter: drop-shadow(0 0 30px rgba(var(--accent-rgb), 0.6)); }
   }
   .hero .lead { margin: 0 auto; }
+
+  h2 { margin: 0; }
+  .section-head { display: flex; align-items: baseline; gap: 16px; margin: 44px 0 16px; }
+  .section-head h2 { flex: 1; }
+  .more { font-size: 0.9rem; text-decoration: none; white-space: nowrap; }
+  .more:hover { text-decoration: underline; }
+
+  /* Realm + characters */
+  .duo { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); }
+  .box { padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+  .box-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .box h2 { font-size: 1.15rem; }
+  .box p { margin: 0; font-size: 0.95rem; }
+  .realm-stats { display: flex; gap: 28px; margin: 0; }
+  .realm-stats dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .realm-stats dd { margin: 0; font-size: 1.3rem; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .realmlist {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 8px 8px 8px 12px; border-radius: 6px; background: rgba(var(--bg-rgb), 0.6); border: 1px solid var(--border);
+  }
+  .realmlist code { flex: 1; font-size: 0.9rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .copy {
+    font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+    color: var(--accent); background: var(--accent-soft); border: 1px solid rgba(var(--accent-rgb), 0.3);
+    border-radius: 5px; padding: 3px 10px;
+  }
+  .copy:hover { border-color: var(--border-hi); }
+  .features { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .features :global(li) {
+    font-size: 0.78rem; color: var(--muted); padding: 2px 10px;
+    border: 1px solid var(--border); border-radius: 999px;
+  }
+  .actions { margin-top: auto; }
+  .status { font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+  .status.on { color: #86e6a0; border-color: #2a5c38; background: #16281c; }
+  .status.off { color: #ff9a9d; border-color: #5c2a2d; background: #2e1414; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; padding: 9px 18px; border-radius: 6px; font-weight: 600; font-size: 0.95rem;
+    text-decoration: none; color: var(--text); border: 1px solid var(--border); background: var(--panel);
+  }
+  .btn:hover { border-color: var(--border-hi); }
+  .btn.primary { color: #051620; background: linear-gradient(180deg, #8adcff, var(--accent)); border-color: var(--border-hi); }
+  .btn.primary:hover { background: linear-gradient(180deg, #c0ecff, #8adcff); }
+
+  .roster { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .roster li { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--border); }
+  .roster li:first-child { border-top: 0; padding-top: 0; }
+  .roster :global(.portrait) {
+    width: 36px; height: 36px; border-radius: 6px; flex-shrink: 0;
+    border: 2px solid var(--class, var(--border)); background: var(--panel);
+  }
+  .who { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+  .cname { font-weight: 700; color: var(--class, var(--text)); display: flex; align-items: center; gap: 6px; }
+  .sub { font-size: 0.82rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ilvl { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .roster :global(li.online) .cname::after {
+    content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px var(--ok);
+  }
+  .owner-tag {
+    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--owner, var(--text)); border: 1px solid var(--owner, var(--border)); border-radius: 999px; padding: 0 8px;
+  }
+
+  /* Decks and projects */
+  .decks { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
+  .repos { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
+  .meta { margin-top: auto; padding-top: 6px; display: flex; gap: 12px; font-size: 0.8rem; color: var(--muted); }
+  .meta span:first-child:not(:last-child) { color: var(--accent); }
+
+  .extra { justify-content: center; margin-top: 40px; }
+
+  @media (max-width: 480px) {
+    .decks { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .realmlist .small { display: none; }
+  }
 </style>

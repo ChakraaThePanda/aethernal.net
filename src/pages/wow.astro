@@ -1,18 +1,14 @@
 ---
-import { existsSync, readFileSync } from 'node:fs';
 import Base from '../layouts/Base.astro';
 import RetailCharacter from '../components/RetailCharacter.astro';
 import OwnerFilter from '../components/OwnerFilter.astro';
 import { aethernalApi, aethernalCharacters, blizzardCharacters } from '../data/characters';
 import { CLASS_COLORS } from '../lib/wow';
+import { loadRetail } from '../lib/retail';
 
-// Written by scripts/fetch-retail.mjs during the deploy workflow; missing when running locally
-// without Battle.net credentials. Resolved from the project root because import.meta.url points
-// into the build output once Astro bundles this page.
-const retailFile = `${process.cwd()}/src/data/generated/retail.json`;
 // Everyone who owns a tracked character, for the filter buttons.
 const owners = [...new Set([...blizzardCharacters, ...aethernalCharacters].map((c) => c.owner).filter(Boolean))];
-const retail = existsSync(retailFile) ? JSON.parse(readFileSync(retailFile, 'utf8')) : null;
+const retail = loadRetail();
 ---
 <Base title="World of Warcraft" description="Live World of Warcraft character profiles on Retail, WoW Forever and the Aethernal server.">
   <h1>World of Warcraft</h1>

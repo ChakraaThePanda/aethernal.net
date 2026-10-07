@@ -5,9 +5,10 @@ import { deckInfo } from '../lib/archidekt';
 interface Props {
   deck: Deck;
   compact?: boolean;
+  owner?: string; // shown as a tag, for lists that mix everyone's decks
 }
 
-const { deck, compact = false } = Astro.props;
+const { deck, compact = false, owner } = Astro.props;
 const { art, commanders } = await deckInfo(deck.id);
 const commanderNames = commanders.map((c) => c.name).join(' & ');
 ---
@@ -20,6 +21,7 @@ const commanderNames = commanders.map((c) => c.name).join(' & ');
   data-preview-alt={commanderNames || undefined}
 >
   <div class="art" style={art ? `background-image: url('${art}')` : undefined}></div>
+  {owner && <span class="owner-tag" data-owner={owner}>{owner}</span>}
   <span class="label">
     <span class="name">{deck.name}</span>
     {commanderNames && <span class="commander">{commanderNames}</span>}
@@ -54,4 +56,10 @@ const commanderNames = commanders.map((c) => c.name).join(' & ');
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5), 0 0 18px rgba(var(--accent-rgb), 0.12);
   }
   .deck:hover .art { transform: scale(1.04); }
+  .owner-tag {
+    position: absolute; top: 10px; right: 10px;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--owner, var(--text)); background: rgba(var(--bg-rgb), 0.8);
+    border: 1px solid var(--owner, var(--border)); border-radius: 999px; padding: 1px 9px;
+  }
 </style>
