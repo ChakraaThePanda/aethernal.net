@@ -127,6 +127,12 @@ details.acc > summary > span:first-child { flex: 1; }
 .acc .gear .slot, .acc .gear .ilvl { color: var(--muted); }
 
 /* Whose character a card is. */
+/* Hardcore Aethernal characters (home roster and /wow cards). */
+.hardcore {
+  display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #ff9a9d; background: #2e1414; border: 1px solid #c41e3a; border-radius: 999px; padding: 0 8px; line-height: 1.6;
+}
+.hardcore[hidden] { display: none; }
 .char .owner {
   position: absolute; top: 12px; right: 12px; z-index: 1;
   font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;

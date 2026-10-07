@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import DeckCard from '../components/DeckCard.astro';
 import { players } from '../data/decks';
-import { aethernalApi, aethernalCharacters } from '../data/characters';
+import { aethernalApi } from '../data/characters';
 import { deckInfo } from '../lib/archidekt';
 import { recentRepos } from '../lib/github';
 import { loadRetail } from '../lib/retail';
@@ -73,18 +73,20 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
             {c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}
           </li>
         ))}
-        {aethernalCharacters.map((c) => (
-          <li data-aethernal={c.name.toLowerCase()} data-played="0">
-            <span class="portrait"></span>
-            <span class="who">
-              <span class="cname">{c.name}</span>
-              <span class="sub">Aethernal</span>
-            </span>
-            <span class="ilvl" title="Item level"></span>
-            {c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}
-          </li>
-        ))}
       </ul>
+      <!-- One row per Aethernal character, filled in from the realm API. -->
+      <template id="aethernal-row">
+        <li data-played="0">
+          <img class="portrait" alt="" width="36" height="36" />
+          <span class="who">
+            <span class="cname"></span>
+            <span class="sub"></span>
+            <span class="hardcore" hidden>Hardcore</span>
+          </span>
+          <span class="ilvl" title="Item level"></span>
+          <span class="owner-tag" hidden></span>
+        </li>
+      </template>
     </section>
   </div>
 
@@ -119,7 +121,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
   )}
 
 
-  <div id="aethernal-api" data-api={aethernalApi} data-names={aethernalCharacters.map((c) => c.name).join(',')} hidden></div>
+  <div id="aethernal-api" data-api={aethernalApi} hidden></div>
 </Base>
 
 <script>
@@ -128,10 +130,11 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
   // Live realm status and Aethernal characters from the account panel's public API.
   const api = document.getElementById('aethernal-api')!;
   const status = document.getElementById('realm-status')!;
+  const row = document.getElementById('aethernal-row') as HTMLTemplateElement;
 
   async function load() {
     try {
-      const res = await fetch(`${api.dataset.api}?names=${encodeURIComponent(api.dataset.names!)}`);
+      const res = await fetch(api.dataset.api!);
       if (!res.ok) throw new Error(String(res.status));
       const data = await res.json();
       status.className = `status ${data.realm.online ? 'on' : 'off'}`;
@@ -147,26 +150,33 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
         box.querySelector('code')!.textContent = `set realmlist ${r.realmlist}`;
         box.hidden = false;
       }
+      // The server decides which Aethernal characters are public (and who owns them).
+      const roster = document.querySelector('.roster')!;
+      const names = new Set(data.characters.map((c: { name: string }) => c.name.toLowerCase()));
+      roster.querySelectorAll<HTMLElement>('[data-aethernal]').forEach((li) => {
+        if (!names.has(li.dataset.aethernal!)) li.remove();
+      });
       for (const c of data.characters) {
-        const li = document.querySelector<HTMLElement>(`[data-aethernal="${c.name.toLowerCase()}"]`);
-        if (!li) continue;
-        li.style.setProperty('--class', classColor(c.className));
-        const portrait = li.querySelector('.portrait')!;
-        if (portrait.tagName !== 'IMG') {
-          const img = document.createElement('img');
-          img.className = 'portrait';
-          img.alt = '';
-          img.width = img.height = 36;
-          portrait.replaceWith(img);
+        let li = roster.querySelector<HTMLElement>(`[data-aethernal="${c.name.toLowerCase()}"]`);
+        if (!li) {
+          li = row.content.firstElementChild!.cloneNode(true) as HTMLElement;
+          li.dataset.aethernal = c.name.toLowerCase();
+          li.querySelector('.cname')!.textContent = c.name;
+          roster.append(li);
         }
-        li.querySelector<HTMLImageElement>('img.portrait')!.src = classIconUrl(c.className);
+        const owner = li.querySelector<HTMLElement>('.owner-tag')!;
+        owner.hidden = !c.owner;
+        owner.textContent = c.owner ?? '';
+        if (c.owner) owner.dataset.owner = c.owner;
+        li.style.setProperty('--class', classColor(c.className));
+        li.querySelector<HTMLImageElement>('.portrait')!.src = classIconUrl(c.className);
         li.querySelector('.sub')!.textContent = `${c.level} ${c.className} · Aethernal`;
         li.querySelector('.ilvl')!.textContent = c.itemLevel ?? '';
+        li.querySelector<HTMLElement>('.hardcore')!.hidden = !c.hardcore;
         li.classList.toggle('online', c.online);
         li.dataset.played = String(c.online ? Date.now() : c.lastSeen ?? 0);
       }
       // Most recently played first; CSS shows the first five.
-      const roster = document.querySelector('.roster')!;
       [...roster.children]
         .sort((a, b) => Number((b as HTMLElement).dataset.played) - Number((a as HTMLElement).dataset.played))
         .forEach((li) => roster.append(li));
@@ -257,6 +267,8 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
   .roster :global(li.online) .cname::after {
     content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px var(--ok);
   }
+  .who .hardcore { align-self: flex-start; margin-top: 3px; }
+  .owner-tag[hidden] { display: none; }
   .owner-tag {
     font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--owner, var(--text)); border: 1px solid var(--owner, var(--border)); border-radius: 999px; padding: 0 8px;

@@ -17,9 +17,6 @@ export const blizzardCharacters: BlizzardCharacter[] = [
 ];
 
 // Aethernal characters are fetched live in the browser from the account panel's public API.
-// The server only answers for names in its own PUBLIC_CHARACTERS allowlist.
+// Which characters appear (and their owners) is set on the server: PUBLIC_CHARACTERS in the
+// AzerothCore docker-compose.override.yml, as Name:Owner pairs.
 export const aethernalApi = 'https://wow.aethernal.net/api/public/characters';
-export const aethernalCharacters: { name: string; owner: string }[] = [
-  { name: 'Fish', owner: 'Pat' },
-  { name: 'Croustille', owner: 'Mimi' },
-];

@@ -1,19 +1,18 @@
 ---
 // "All / Pat / Mimi / ..." buttons. Hides every [data-filter-item] whose data-owner doesn't match,
 // and any [data-filter-group] left with nothing visible. Pages that render items later (like the
-// Aethernal cards) call window.applyOwnerFilter() afterwards.
+// Aethernal cards) call window.addFilterOwners([...]) for any new owners, then window.applyOwnerFilter().
+// The buttons only show once there are at least two owners.
 interface Props {
   owners: string[];
 }
 
 const { owners } = Astro.props;
 ---
-{owners.length > 1 && (
-  <div class="owner-filter pill-list" role="group" aria-label="Show only">
-    <button type="button" class="pill" data-filter="" aria-pressed="true">All</button>
-    {owners.map((o) => <button type="button" class="pill" data-filter={o} data-owner={o} aria-pressed="false">{o}</button>)}
-  </div>
-)}
+<div class="owner-filter pill-list" role="group" aria-label="Show only" hidden={owners.length < 2}>
+  <button type="button" class="pill" data-filter="" aria-pressed="true">All</button>
+  {owners.map((o) => <button type="button" class="pill" data-filter={o} data-owner={o} aria-pressed="false">{o}</button>)}
+</div>
 
 <script is:inline>
   (() => {
@@ -27,19 +26,35 @@ const { owners } = Astro.props;
         group.hidden = items.length > 0 && [...items].every((i) => i.hidden);
       }
     };
-    const buttons = document.querySelectorAll('.owner-filter button');
-    for (const btn of buttons) {
-      btn.addEventListener('click', () => {
-        active = btn.dataset.filter;
-        for (const b of buttons) b.setAttribute('aria-pressed', String(b === btn));
-        window.applyOwnerFilter();
-      });
-    }
+    const bar = document.querySelector('.owner-filter');
+    const buttons = () => bar.querySelectorAll('button');
+    const wire = (btn) => btn.addEventListener('click', () => {
+      active = btn.dataset.filter;
+      for (const b of buttons()) b.setAttribute('aria-pressed', String(b === btn));
+      window.applyOwnerFilter();
+    });
+    buttons().forEach(wire);
+
+    window.addFilterOwners = (owners) => {
+      const known = new Set([...buttons()].map((b) => b.dataset.filter));
+      for (const o of owners) {
+        if (!o || known.has(o)) continue;
+        known.add(o);
+        // Copy the "All" button so the new one keeps this component's scoped styles.
+        const btn = buttons()[0].cloneNode(true);
+        btn.dataset.filter = btn.dataset.owner = btn.textContent = o;
+        btn.setAttribute('aria-pressed', 'false');
+        bar.append(btn);
+        wire(btn);
+      }
+      bar.hidden = known.size - 1 < 2;
+    };
   })();
 </script>
 
 <style>
   .owner-filter { margin: -8px 0 8px; }
+  .owner-filter[hidden] { display: none; }
   .pill { cursor: pointer; font: inherit; font-size: 0.9rem; }
   .pill[aria-pressed="true"] {
     border-color: var(--owner, var(--border-hi));
