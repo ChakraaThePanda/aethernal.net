@@ -16,6 +16,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
 <!doctype html>
 <html lang="en">
   <head>
+    <script is:inline>document.documentElement.classList.add('js');</script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
@@ -37,12 +38,16 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
           <img src="/images/logo.webp" alt="" width="36" height="36" />
           <span>Aethernal</span>
         </a>
-        <nav aria-label="Main">
+        <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+        <nav id="site-nav" aria-label="Main">
           {nav.map((item, i) => (
             <>
               {item.group && item.group !== nav[i - 1]?.group && (
                 <span class="nav-group" title={item.group}>
-                  {item.groupIcon ? <img src={item.groupIcon} alt={item.group} width="20" height="20" /> : item.group}
+                  {item.groupIcon && <img src={item.groupIcon} alt="" width="20" height="20" />}
+                  <span class:list={['nav-group-name', { 'has-icon': item.groupIcon }]}>{item.group}</span>
                 </span>
               )}
               <a href={item.href} data-same-tab aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
@@ -66,6 +71,23 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
       </div>
     </footer>
     <script is:inline>
+      // Phone menu: the burger opens the nav as a panel under the header.
+      (() => {
+        const header = document.querySelector('.site-header');
+        const toggle = header.querySelector('.nav-toggle');
+        const setOpen = (open) => {
+          header.classList.toggle('open', open);
+          toggle.setAttribute('aria-expanded', String(open));
+          toggle.setAttribute('aria-label', open ? 'Close menu' : 'Menu');
+        };
+        toggle.addEventListener('click', () => setOpen(!header.classList.contains('open')));
+        header.querySelectorAll('nav a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+        document.addEventListener('click', (e) => { if (!header.contains(e.target)) setOpen(false); });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && header.classList.contains('open')) { setOpen(false); toggle.focus(); }
+        });
+      })();
+
       // Every link to another site opens in a new tab, including ones added later by page scripts.
       // Menu links are exempt so moving to the account panel feels like the same site.
       const markExternal = (a) => {
@@ -95,10 +117,14 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   .brand img { filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.45)); }
   nav { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
   .nav-group {
-    display: flex; align-items: center;
+    display: flex; align-items: center; gap: 8px;
     margin-left: 8px; padding: 2px 4px 2px 14px; border-left: 1px solid var(--border);
     font-family: var(--font-display); font-weight: 700; font-size: 0.72rem;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); opacity: 0.8;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent);
+  }
+  /* On desktop a group with an icon shows just the icon (the name is its tooltip). */
+  .nav-group-name.has-icon {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
   }
   nav a {
     color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.95rem;
@@ -106,10 +132,43 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   }
   nav a:hover { color: var(--text); background: var(--accent-soft); }
   nav a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
-  @media (max-width: 480px) {
-    .header-inner { justify-content: center; padding-top: 8px; padding-bottom: 8px; gap: 6px; }
-    nav a { padding: 6px 10px; }
-    .nav-group { margin-left: 4px; padding-left: 10px; }
+
+  .nav-toggle { display: none; }
+
+  /* Phones and narrow tablets: one slim row with a burger; the menu drops down under it.
+     Without JavaScript (no .js class) the menu just stays visible and wraps. */
+  @media (max-width: 640px) {
+    .header-inner { flex-wrap: nowrap; }
+    :global(.js) .nav-toggle {
+      display: flex; flex-direction: column; justify-content: center; gap: 5px;
+      width: 44px; height: 44px; margin-right: -8px; padding: 0 10px;
+      background: none; border: 0; border-radius: 6px; cursor: pointer;
+    }
+    .nav-toggle span {
+      display: block; height: 2px; border-radius: 2px; background: var(--text);
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .nav-toggle:hover, .nav-toggle:focus-visible { background: var(--accent-soft); }
+    .open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .open .nav-toggle span:nth-child(2) { opacity: 0; }
+    .open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    :global(.js) nav {
+      display: none;
+      position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; align-items: stretch; gap: 2px;
+      padding: 8px 16px 14px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+    }
+    :global(.js) .open nav { display: flex; }
+    nav a { padding: 10px 12px; font-size: 1rem; }
+    .nav-group {
+      margin: 8px 0 2px; padding: 10px 12px 4px; border-left: 0; border-top: 1px solid var(--border);
+    }
+    .nav-group-name.has-icon { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
+    .nav-group ~ a { padding-left: 40px; }
   }
   .site-footer { border-top: 1px solid var(--border); padding: 20px 0; color: var(--muted); font-size: 0.85rem; }
   .site-footer .container { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
