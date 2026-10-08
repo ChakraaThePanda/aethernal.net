@@ -29,7 +29,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
 ---
 <Base>
   <section class="hero">
-    <img class="banner" src="/images/banner.webp" alt="Aethernal" width="872" height="512" />
+    <img class="banner" src="/images/banner.webp" alt="Aethernal" width="820" height="512" />
     <div class="ornate-divider" aria-hidden="true">&#9670;</div>
     <p class="lead">Our WoW characters, a Wrath of the Lich King realm, Commander decks and other projects.</p>
   </section>
@@ -203,8 +203,8 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
 <style>
   .hero { text-align: center; margin: 24px 0 36px; }
   .banner {
-    /* 436px wide = 256px tall. The file is 2x for sharp high-DPI rendering. */
-    width: min(436px, 90%); height: auto; margin: 0 auto;
+    /* 410px wide = 256px tall. The file is 2x for sharp high-DPI rendering. */
+    width: min(410px, 90%); height: auto; margin: 0 auto;
     filter: drop-shadow(0 0 22px rgba(var(--accent-rgb), 0.35));
     animation: frostGlow 4s ease-in-out infinite;
   }
