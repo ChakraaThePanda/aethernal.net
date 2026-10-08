@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import DeckCard from '../components/DeckCard.astro';
 import { players } from '../data/decks';
-import { aethernalApi } from '../data/characters';
+import { aethernalApi, GAME_LABELS } from '../data/characters';
 import { deckInfo } from '../lib/archidekt';
 import { recentRepos } from '../lib/github';
 import { loadRetail } from '../lib/retail';
@@ -10,7 +10,7 @@ import { classColor } from '../lib/wow';
 
 const PANEL = 'https://wow.aethernal.net';
 
-// Retail characters newest login first. The page script re-sorts everyone (Aethernal included) by
+// Battle.net (Retail and Forever) characters newest login first. The page script re-sorts everyone (Aethernal included) by
 // last played once the server answers; the roster shows the top five (the height of the realm box).
 const retail = (loadRetail()?.characters ?? [])
   .filter((c) => !c.error)
@@ -67,7 +67,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
             {c.avatar ? <img class="portrait" src={c.avatar} alt="" width="36" height="36" loading="lazy" /> : <span class="portrait"></span>}
             <span class="who">
               <span class="cname">{c.name}</span>
-              <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · Retail</span>
+              <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · {GAME_LABELS[c.game as keyof typeof GAME_LABELS] ?? 'Retail'}</span>
             </span>
             {c.itemLevel && <span class="ilvl" title="Item level">{c.itemLevel}</span>}
             <span class="tags">{c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}</span>

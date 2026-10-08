@@ -16,6 +16,14 @@ export const CLASS_COLORS: Record<string, string> = {
   'Evoker': '#33937f',
 };
 
+// Character card order everywhere on the WoW page: highest level first, then by owner in the
+// order of the filter buttons (owners missing from the list go last), then by name.
+export function sortRoster<T extends { level?: number | null; owner?: string | null; name: string }>(chars: T[], owners: string[]): T[] {
+  const rank = (o?: string | null) => (o && owners.includes(o) ? owners.indexOf(o) : owners.length);
+  return [...chars].sort((a, b) =>
+    ((b.level ?? 0) - (a.level ?? 0)) || (rank(a.owner) - rank(b.owner)) || a.name.localeCompare(b.name));
+}
+
 export const classColor = (name: string) => CLASS_COLORS[name] ?? 'var(--text)';
 
 // Battle.net quality types and AzerothCore quality ids, both mapped to the --qN CSS variables.

@@ -3,17 +3,23 @@ import Base from '../layouts/Base.astro';
 import RetailCharacter from '../components/RetailCharacter.astro';
 import OwnerFilter from '../components/OwnerFilter.astro';
 import { aethernalApi, blizzardCharacters } from '../data/characters';
-import { CLASS_COLORS } from '../lib/wow';
+import { sortRoster } from '../lib/wow';
 import { loadRetail } from '../lib/retail';
 
-// Everyone who owns a Retail character, for the filter buttons. Aethernal owners come from the
+// Everyone who owns a Battle.net character, for the filter buttons. Aethernal owners come from the
 // realm API and are added once it answers.
 const owners = [...new Set(blizzardCharacters.map((c) => c.owner).filter(Boolean))];
-const retail = loadRetail();
+
+// Battle.net characters split by game. The Forever section only shows once a character has
+// game: 'forever' in characters.ts. The page script sorts the Aethernal cards the same way.
+const fetched = loadRetail()?.characters;
+const retail = fetched && sortRoster(fetched.filter((c) => (c.game ?? 'retail') === 'retail'), owners);
+const forever = sortRoster((fetched ?? []).filter((c) => c.game === 'forever'), owners);
+const foreverListed = blizzardCharacters.some((c) => c.game === 'forever');
 ---
-<Base title="World of Warcraft" description="Live World of Warcraft character profiles on Retail, WoW Forever and the Aethernal server.">
+<Base title="World of Warcraft" description="Live World of Warcraft character profiles on Retail, Forever and the Aethernal server.">
   <h1>World of Warcraft</h1>
-  <p class="lead">Our characters on Retail, WoW Forever and Aethernal.</p>
+  <p class="lead">Our characters on Retail, Forever and Aethernal.</p>
 
   <OwnerFilter owners={owners} />
 
@@ -21,12 +27,25 @@ const retail = loadRetail();
     <h2 class="section-title">Retail</h2>
     {retail ? (
       <div class="chars">
-        {retail.characters.map((c: any) => <RetailCharacter c={c} />)}
+        {retail.map((c: any) => <RetailCharacter c={c} />)}
       </div>
     ) : (
       <p class="panel empty muted">Retail profiles appear here after the next deploy fetches them from Battle.net.</p>
     )}
   </section>
+
+  {foreverListed && (
+    <section data-filter-group>
+      <h2 class="section-title">Forever</h2>
+      {forever.length ? (
+        <div class="chars">
+          {forever.map((c: any) => <RetailCharacter c={c} />)}
+        </div>
+      ) : (
+        <p class="panel empty muted">Forever profiles appear here after the next deploy fetches them from Battle.net.</p>
+      )}
+    </section>
+  )}
 
   <section data-filter-group>
     <h2 class="section-title">Aethernal <span id="realm-status" class="realm-status" hidden></span></h2>
@@ -41,7 +60,9 @@ const retail = loadRetail();
   <script is:inline slot="head" src="https://wow.zamimg.com/js/tooltips.js" defer></script>
 </Base>
 
-<script define:vars={{ CLASS_COLORS }}>
+<script>
+  import { CLASS_COLORS, sortRoster } from '../lib/wow';
+
   // Aethernal: fetched live from the account panel's public API.
   const root = document.getElementById('aethernal');
   const statusEl = document.getElementById('realm-status');
@@ -102,10 +123,13 @@ const retail = loadRetail();
       statusEl.hidden = false;
       statusEl.className = `realm-status ${data.realm.online ? 'on' : 'off'}`;
       statusEl.textContent = data.realm.online ? `Online · ${data.realm.playersOnline} playing` : 'Offline';
-      root.innerHTML = data.characters.length
-        ? data.characters.map(card).join('')
-        : '<p class="panel empty muted">No characters to show yet.</p>';
       window.addFilterOwners?.(data.characters.map((c) => c.owner));
+      // Same order as the Battle.net cards, with the owners in filter-button order.
+      const owners = [...document.querySelectorAll('.owner-filter [data-owner]')].map((b) => b.dataset.owner);
+      const chars = sortRoster(data.characters, owners);
+      root.innerHTML = chars.length
+        ? chars.map(card).join('')
+        : '<p class="panel empty muted">No characters to show yet.</p>';
       window.applyOwnerFilter?.();
       window.$WowheadPower?.refreshLinks();
     } catch {
