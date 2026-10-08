@@ -172,7 +172,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
         if (c.owner) owner.dataset.owner = c.owner;
         li.style.setProperty('--class', classColor(c.className));
         li.querySelector<HTMLImageElement>('.portrait')!.src = classIconUrl(c.className);
-        li.querySelector('.sub')!.textContent = `${c.level} ${c.className} · Aethernal`;
+        li.querySelector('.sub')!.textContent = `${c.level} ${c.spec ? `${c.spec} ` : ''}${c.className} · Aethernal`;
         li.querySelector('.ilvl')!.textContent = c.itemLevel ?? '';
         li.querySelector<HTMLElement>('.hardcore')!.hidden = !c.hardcore;
         li.classList.toggle('online', c.online);

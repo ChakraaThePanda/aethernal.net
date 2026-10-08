@@ -79,7 +79,7 @@ const retail = loadRetail();
               <h3 class="cname">${esc(c.name)}
                 <span class="dot ${c.online ? 'on' : ''}" title="${c.online ? 'Online' : 'Offline'}"></span>
               </h3>
-              <div class="sub">Level ${c.level} ${esc(c.race)} <span class="cls">${esc(c.className)}</span></div>
+              <div class="sub">Level ${c.level} ${esc(c.race)} <span class="cls">${c.spec ? `${esc(c.spec)} ` : ''}${esc(c.className)}</span></div>
               ${c.guild ? `<div class="sub muted">&lt;${esc(c.guild)}&gt;</div>` : ''}
             </div>
           </header>
