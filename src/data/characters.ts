@@ -3,12 +3,18 @@
 // Retail (and later WoW Forever / Classic) characters are fetched from the Battle.net API by
 // scripts/fetch-retail.mjs during each deploy. `namespace` is the Battle.net profile namespace:
 // 'profile-us' for retail, 'profile-classic-us' / 'profile-classic1x-us' for Classic flavors.
+// `game` picks the section the card shows in on the WoW page; it defaults to 'retail'.
+export type BlizzardGame = 'retail' | 'forever';
+
+export const GAME_LABELS: Record<BlizzardGame, string> = { retail: 'Retail', forever: 'Forever' };
+
 export interface BlizzardCharacter {
   name: string;
   realm: string; // realm slug, e.g. 'stormrage'
   region: 'us' | 'eu';
   namespace: string;
   owner: string;
+  game?: BlizzardGame;
 }
 
 export const blizzardCharacters: BlizzardCharacter[] = [

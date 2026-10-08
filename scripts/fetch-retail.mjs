@@ -28,7 +28,7 @@ async function loadCharacterList() {
     for (const [, key, value] of m[1].matchAll(/(\w+):\s*'([^']*)'/g)) obj[key] = value;
     return obj;
   });
-  return entries.filter((c) => c.name && c.realm);
+  return entries.filter((c) => c.name && c.realm).map((c) => ({ game: 'retail', ...c }));
 }
 
 async function getToken(region) {
@@ -179,6 +179,7 @@ async function fetchCharacter(api, c) {
   return {
     name: profile.name,
     owner: c.owner,
+    game: c.game || 'retail',
     realm: profile.realm.name,
     level: profile.level,
     race: profile.race.name,
