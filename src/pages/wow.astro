@@ -76,7 +76,7 @@ const foreverListed = blizzardCharacters.some((c) => c.game === 'forever');
     `${ICONS}/race_${c.race === 'Undead' ? 'scourge' : slug(c.race)}_${c.gender === 'Female' ? 'female' : 'male'}.jpg`;
   const played = (sec) => {
     const h = Math.floor(sec / 3600);
-    return h >= 24 ? `${Math.floor(h / 24)}d ${h % 24}h` : `${h}h`;
+    return h >= 24 ? `${Math.floor(h / 24)}d ${h % 24}h` : `${h}h ${Math.floor(sec / 60) % 60}m`;
   };
 
   function card(c) {
