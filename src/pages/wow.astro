@@ -74,9 +74,13 @@ const foreverListed = blizzardCharacters.some((c) => c.game === 'forever');
   const classIcon = (c) => `${ICONS}/classicon_${slug(c.className)}.jpg`;
   const raceIcon = (c) =>
     `${ICONS}/race_${c.race === 'Undead' ? 'scourge' : slug(c.race)}_${c.gender === 'Female' ? 'female' : 'male'}.jpg`;
+  const hoursMinutes = (sec) => `${Math.floor(sec / 3600)}h ${Math.floor(sec / 60) % 60}m`;
+  // Over a day, show days and hours; hovering gives the total in hours and minutes.
   const played = (sec) => {
     const h = Math.floor(sec / 3600);
-    return h >= 24 ? `${Math.floor(h / 24)}d ${h % 24}h` : `${h}h ${Math.floor(sec / 60) % 60}m`;
+    return h >= 24
+      ? `<span title="${hoursMinutes(sec)}">${Math.floor(h / 24)}d ${h % 24}h</span>`
+      : hoursMinutes(sec);
   };
 
   function card(c) {
@@ -171,4 +175,5 @@ const foreverListed = blizzardCharacters.some((c) => c.game === 'forever');
   #aethernal :global(.stats) { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0; }
   #aethernal :global(.stats dt) { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
   #aethernal :global(.stats dd) { margin: 0; font-size: 1.25rem; font-weight: 700; }
+  #aethernal :global(.stats dd [title]) { cursor: help; }
 </style>
