@@ -74,6 +74,10 @@ const foreverListed = blizzardCharacters.some((c) => c.game === 'forever');
   const classIcon = (c) => `${ICONS}/classicon_${slug(c.className)}.jpg`;
   const raceIcon = (c) =>
     `${ICONS}/race_${c.race === 'Undead' ? 'scourge' : slug(c.race)}_${c.gender === 'Female' ? 'female' : 'male'}.jpg`;
+  // Names and guilds open in the armory on the account panel (same tab, like the menu's Server link).
+  const ARMORY = 'https://wow.aethernal.net/armory';
+  const armoryLink = (path, name, text) =>
+    `<a href="${ARMORY}/${path}/${encodeURIComponent(name)}" data-same-tab>${text}</a>`;
   const hoursMinutes = (sec) => `${Math.floor(sec / 3600)}h ${Math.floor(sec / 60) % 60}m`;
   // Over a day, show days and hours; hovering gives the total in hours and minutes.
   const played = (sec) => {
@@ -101,11 +105,11 @@ const foreverListed = blizzardCharacters.some((c) => c.game === 'forever');
               <img class="race-icon" src="${raceIcon(c)}" alt="${esc(`${c.gender} ${c.race}`)}" width="24" height="24" loading="lazy">
             </div>
             <div>
-              <h3 class="cname">${esc(c.name)}
+              <h3 class="cname">${armoryLink('character', c.name, esc(c.name))}
                 <span class="dot ${c.online ? 'on' : ''}" title="${c.online ? 'Online' : 'Offline'}"></span>
               </h3>
               <div class="sub">Level ${c.level} ${esc(c.race)} <span class="cls">${c.spec ? `${esc(c.spec)} ` : ''}${esc(c.className)}</span></div>
-              ${c.guild ? `<div class="sub muted">&lt;${esc(c.guild)}&gt;</div>` : ''}
+              ${c.guild ? `<div class="sub muted">${armoryLink('guild', c.guild, `&lt;${esc(c.guild)}&gt;`)}</div>` : ''}
             </div>
           </header>
           <dl class="stats">
@@ -144,8 +148,19 @@ const foreverListed = blizzardCharacters.some((c) => c.game === 'forever');
     }
   }
 
-  loadAethernal();
-  setInterval(loadAethernal, 60_000);
+  // Refresh every minute, but only while the page is visible: background tabs don't poll the
+  // server, and coming back to the tab refreshes at once if the data is older than that.
+  const REFRESH_MS = 60_000;
+  let loadedAt = 0;
+  const refresh = () => {
+    loadedAt = Date.now();
+    loadAethernal();
+  };
+  refresh();
+  setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, REFRESH_MS);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && Date.now() - loadedAt >= REFRESH_MS) refresh();
+  });
 </script>
 
 <style>
@@ -169,6 +184,8 @@ const foreverListed = blizzardCharacters.some((c) => c.game === 'forever');
   }
   #aethernal :global(.cname) { margin: 0; font-size: 1.35rem; color: var(--class); display: flex; align-items: center; gap: 8px; }
   #aethernal :global(.sub) { font-size: 0.9rem; }
+  #aethernal :global(.cname a), #aethernal :global(.sub a) { color: inherit; text-decoration: none; }
+  #aethernal :global(.cname a:hover), #aethernal :global(.sub a:hover) { text-decoration: underline; text-underline-offset: 3px; }
   #aethernal :global(.cls) { display: block; color: var(--class); font-weight: 600; }
   #aethernal :global(.dot) { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); opacity: 0.5; }
   #aethernal :global(.dot.on) { background: var(--ok); opacity: 1; box-shadow: 0 0 8px var(--ok); }

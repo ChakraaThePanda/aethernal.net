@@ -6,6 +6,9 @@ export function GET() {
     ...item,
     href: new URL(item.href, SITE).href,
     ...(item.groupIcon && { groupIcon: new URL(item.groupIcon, SITE).href }),
+    ...(item.children && {
+      children: item.children.map((child) => ({ ...child, href: new URL(child.href, SITE).href })),
+    }),
   }));
   return new Response(JSON.stringify({ items }), {
     headers: { 'Content-Type': 'application/json' },

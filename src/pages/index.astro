@@ -187,8 +187,19 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
       status.textContent = 'Unreachable';
     }
   }
-  load();
-  setInterval(load, 60_000);
+  // Refresh every minute, but only while the page is visible: background tabs don't poll the
+  // server, and coming back to the tab refreshes at once if the data is older than that.
+  const REFRESH_MS = 60_000;
+  let loadedAt = 0;
+  const refresh = () => {
+    loadedAt = Date.now();
+    load();
+  };
+  refresh();
+  setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, REFRESH_MS);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && Date.now() - loadedAt >= REFRESH_MS) refresh();
+  });
 
   document.querySelector('#realmlist .copy')!.addEventListener('click', async (e) => {
     const btn = e.currentTarget as HTMLButtonElement;
