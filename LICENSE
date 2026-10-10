@@ -1,0 +1,19 @@
+Copyright (c) 2026 Chakraa. All rights reserved.
+
+The source code, text, design and original images in this repository and on aethernal.net are
+the property of Chakraa. The repository is public so the site can be hosted, not to grant any
+license. No part of it may be copied, modified, redistributed or used in other projects without
+prior written permission from Chakraa.
+
+Third-party material shown on the site belongs to its owners and is not covered by this notice:
+
+- World of Warcraft, its names, characters and artwork are trademarks or registered trademarks
+  of Blizzard Entertainment, Inc. Character data comes from the Battle.net API.
+- Item, class and race icons and item tooltips are provided by Wowhead.
+- Magic: The Gathering, its card names and artwork are property of Wizards of the Coast LLC.
+  Deck data and art come from Archidekt.
+- Fonts (Cinzel, Inter) are served by Google Fonts under their own licenses, and the npm
+  packages used to build the site are covered by their own licenses.
+
+This site is a fan project and is not affiliated with or endorsed by Blizzard Entertainment,
+Wizards of the Coast, Wowhead or Archidekt.
