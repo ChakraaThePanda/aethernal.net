@@ -50,7 +50,20 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
                   <span class:list={['nav-group-name', { 'has-icon': item.groupIcon }]}>{item.group}</span>
                 </span>
               )}
-              <a href={item.href} data-same-tab aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+              {item.children ? (
+                <span class="nav-item">
+                  <a href={item.href} data-same-tab aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+                  <span class="nav-sub">
+                    <span class="nav-menu">
+                      {item.children.map((child) => (
+                        <a href={child.href} data-same-tab aria-current={isActive(child.href) ? 'page' : undefined}>{child.label}</a>
+                      ))}
+                    </span>
+                  </span>
+                </span>
+              ) : (
+                <a href={item.href} data-same-tab aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+              )}
             </>
           ))}
         </nav>
@@ -133,6 +146,21 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   nav a:hover { color: var(--text); background: var(--accent-soft); }
   nav a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
 
+  /* An item with sub-pages (Server > Armory): a small menu that opens on hover or keyboard focus. */
+  .nav-item { position: relative; display: flex; }
+  .nav-sub {
+    display: none;
+    /* padding-top bridges the gap so the pointer can move from the item into the menu. */
+    position: absolute; top: 100%; left: 50%; transform: translateX(-50%); z-index: 1; padding-top: 6px;
+  }
+  .nav-item:hover .nav-sub, .nav-item:focus-within .nav-sub { display: block; }
+  .nav-menu {
+    display: flex; flex-direction: column; gap: 2px; min-width: 140px; padding: 6px;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+  }
+  .nav-menu a { white-space: nowrap; }
+
   .nav-toggle { display: none; }
 
   /* Phones and narrow tablets: one slim row with a burger; the menu drops down under it.
@@ -170,7 +198,15 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
       letter-spacing: 0.02em; text-transform: none; color: var(--muted);
     }
     .nav-group-name.has-icon { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
-    .nav-group ~ a { padding-left: 40px; }
+    .nav-group ~ a, .nav-group ~ .nav-item > a { padding-left: 40px; }
+    /* Sub-pages are always listed, one step further in, with a short line marking them as the item's. */
+    .nav-item { display: contents; }
+    .nav-sub, .nav-item:hover .nav-sub { display: block; position: static; transform: none; padding: 0; }
+    .nav-menu { min-width: 0; padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none; }
+    .nav-menu a { position: relative; padding-left: 60px; }
+    .nav-menu a::before {
+      content: ''; position: absolute; left: 44px; top: 50%; width: 8px; height: 1px; background: var(--border);
+    }
   }
   .site-footer { border-top: 1px solid var(--border); padding: 20px 0; color: var(--muted); font-size: 0.85rem; }
   .site-footer .container { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }

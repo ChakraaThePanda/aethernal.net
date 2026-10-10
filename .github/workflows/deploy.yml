@@ -39,6 +39,18 @@ jobs:
         with:
           path: dist
 
+  # GitHub turns scheduled workflows off after 60 days without a commit. Re-enabling this workflow
+  # from its own scheduled run resets that countdown, so the hourly refresh never stops.
+  keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/deploy.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
