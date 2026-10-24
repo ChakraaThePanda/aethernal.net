@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { nav } from '../data/nav';
+import { nav, NAV_ICONS } from '../data/nav';
 
 interface Props {
   title?: string;
@@ -42,29 +42,29 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
           <span></span><span></span><span></span>
         </button>
         <nav id="site-nav" aria-label="Main">
-          {nav.map((item, i) => (
-            <>
-              {item.group && item.group !== nav[i - 1]?.group && (
-                <span class="nav-group" title={item.group}>
-                  {item.groupIcon && <img src={item.groupIcon} alt="" width="20" height="20" />}
-                  <span class:list={['nav-group-name', { 'has-icon': item.groupIcon }]}>{item.group}</span>
+          {nav.map((item) => item.tiles ? (
+            <span class:list={['nav-drop', { current: item.tiles.some((tile) => isActive(tile.href)) }]}>
+              <button class="nav-trigger" type="button" aria-expanded="false">
+                {item.image && <img src={item.image} alt="" width="20" height="20" />}
+                <span>{item.label}</span>
+                <svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" /></svg>
+              </button>
+              <span class="nav-panel">
+                <span class="nav-tiles">
+                  {item.tiles.map((tile) => (
+                    <>
+                    {tile.section && <span class="nav-tile-sep">{tile.section}</span>}
+                    <a class="nav-tile" href={tile.href} data-same-tab aria-current={isActive(tile.href) ? 'page' : undefined}>
+                      <svg class="nav-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={NAV_ICONS[tile.icon]} />
+                      <span><b>{tile.label}</b><small>{tile.description}</small></span>
+                    </a>
+                    </>
+                  ))}
                 </span>
-              )}
-              {item.children ? (
-                <span class="nav-item">
-                  <a href={item.href} data-same-tab aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
-                  <span class="nav-sub">
-                    <span class="nav-menu">
-                      {item.children.map((child) => (
-                        <a href={child.href} data-same-tab aria-current={isActive(child.href) ? 'page' : undefined}>{child.label}</a>
-                      ))}
-                    </span>
-                  </span>
-                </span>
-              ) : (
-                <a href={item.href} data-same-tab aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
-              )}
-            </>
+              </span>
+            </span>
+          ) : (
+            <a href={item.href} data-same-tab aria-current={isActive(item.href!) ? 'page' : undefined}>{item.label}</a>
           ))}
         </nav>
       </div>
@@ -78,9 +78,9 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
       <div class="container">
         <span>Aethernal</span>
         <span class="dot" aria-hidden="true">&#9670;</span>
-        <a href="https://github.com/ChakraaThePanda">GitHub</a>
+        <span class="footer-link" title="Discord"><svg class="footer-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.74 19.74 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.11 13.11 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>@Chakraa</span>
         <span class="dot" aria-hidden="true">&#9670;</span>
-        <a href="https://wow.aethernal.net/" data-same-tab>WoW Server</a>
+        <a class="footer-link" href="https://github.com/ChakraaThePanda"><svg class="footer-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>GitHub</a>
       </div>
     </footer>
     <script is:inline>
@@ -96,6 +96,16 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
         toggle.addEventListener('click', () => setOpen(!header.classList.contains('open')));
         header.querySelectorAll('nav a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
         document.addEventListener('click', (e) => { if (!header.contains(e.target)) setOpen(false); });
+
+        // Desktop dropdowns open on hover, and also on click for touch screens without hover.
+        const drops = header.querySelectorAll('.nav-drop');
+        const setShown = (drop, shown) => {
+          drop.classList.toggle('shown', shown);
+          drop.querySelector('.nav-trigger').setAttribute('aria-expanded', String(shown));
+        };
+        drops.forEach((drop) => drop.querySelector('.nav-trigger')
+          .addEventListener('click', () => setShown(drop, !drop.classList.contains('shown'))));
+        document.addEventListener('click', (e) => drops.forEach((drop) => { if (!drop.contains(e.target)) setShown(drop, false); }));
         document.addEventListener('keydown', (e) => {
           if (e.key === 'Escape' && header.classList.contains('open')) { setOpen(false); toggle.focus(); }
         });
@@ -129,16 +139,6 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.05em; }
   .brand img { filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.45)); }
   nav { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
-  .nav-group {
-    display: flex; align-items: center; gap: 8px;
-    margin-left: 8px; padding: 2px 4px 2px 14px; border-left: 1px solid var(--border);
-    font-family: var(--font-display); font-weight: 700; font-size: 0.72rem;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent);
-  }
-  /* On desktop a group with an icon shows just the icon (the name is its tooltip). */
-  .nav-group-name.has-icon {
-    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
-  }
   nav a {
     color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.95rem;
     padding: 6px 12px; border-radius: 6px;
@@ -146,20 +146,43 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   nav a:hover { color: var(--text); background: var(--accent-soft); }
   nav a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
 
-  /* An item with sub-pages (Server > Armory): a small menu that opens on hover or keyboard focus. */
-  .nav-item { position: relative; display: flex; }
-  .nav-sub {
+  /* An item with tiles (World of Warcraft): a panel of tiles that opens on hover, click or keyboard focus. */
+  .nav-drop { position: relative; display: flex; }
+  .nav-trigger {
+    display: flex; align-items: center; gap: 8px; margin-left: 8px;
+    padding: 6px 12px; border: 0; border-radius: 6px; background: none; cursor: pointer;
+    color: var(--muted); font: inherit; font-weight: 500; font-size: 0.95rem;
+  }
+  .nav-drop:hover .nav-trigger, .nav-drop.shown .nav-trigger { color: var(--text); background: var(--accent-soft); }
+  .nav-drop.current .nav-trigger { color: var(--accent); background: var(--accent-soft); }
+  .caret { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s; }
+  .nav-drop:hover .caret, .nav-drop.shown .caret { transform: rotate(180deg); }
+  .nav-panel {
     display: none;
-    /* padding-top bridges the gap so the pointer can move from the item into the menu. */
-    position: absolute; top: 100%; left: 50%; transform: translateX(-50%); z-index: 1; padding-top: 6px;
+    /* padding-top bridges the gap so the pointer can move from the item into the panel. */
+    position: absolute; top: 100%; right: 0; z-index: 1; padding-top: 8px;
   }
-  .nav-item:hover .nav-sub, .nav-item:focus-within .nav-sub { display: block; }
-  .nav-menu {
-    display: flex; flex-direction: column; gap: 2px; min-width: 140px; padding: 6px;
-    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+  .nav-drop:hover .nav-panel, .nav-drop.shown .nav-panel, .nav-drop:has(:focus-visible) .nav-panel { display: block; }
+  .nav-tiles {
+    display: flex; flex-direction: column; gap: 6px; width: 340px; padding: 10px;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.55);
   }
-  .nav-menu a { white-space: nowrap; }
+  nav .nav-tile {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+    color: var(--text); background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  }
+  nav .nav-tile:hover { color: var(--text); background: var(--panel-alt); border-color: rgba(var(--accent-rgb), 0.5); }
+  nav .nav-tile[aria-current="page"] { color: var(--text); background: var(--accent-soft); border-color: rgba(var(--accent-rgb), 0.5); }
+  /* The start of a new section of tiles: its name, then a line. */
+  .nav-tile-sep {
+    display: flex; align-items: center; gap: 10px; margin: 8px 2px 2px;
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+  }
+  .nav-tile-sep::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .nav-tile-icon { flex: none; width: 22px; height: 22px; color: var(--accent); }
+  .nav-tile b { display: block; font-weight: 600; font-size: 0.95rem; line-height: 1.3; }
+  .nav-tile small { display: block; margin-top: 2px; color: var(--muted); font-size: 0.8rem; line-height: 1.35; }
 
   .nav-toggle { display: none; }
 
@@ -192,25 +215,23 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
     }
     :global(.js) .open nav { display: flex; }
     nav a { padding: 10px 12px; font-size: 1rem; }
-    .nav-group {
-      margin: 8px 0 2px; padding: 10px 12px 4px; border-left: 0; border-top: 1px solid var(--border);
-      font-family: var(--font-body); font-size: 0.85rem; font-weight: 600;
-      letter-spacing: 0.02em; text-transform: none; color: var(--muted);
+    /* The World of Warcraft dropdown is always open in the phone menu: its name becomes a group
+       heading and its pages are listed as tiles, one per row. */
+    .nav-drop { display: block; }
+    .nav-trigger, .nav-drop:hover .nav-trigger, .nav-drop.current .nav-trigger {
+      width: 100%; margin: 8px 0 2px; padding: 10px 12px 4px;
+      border-top: 1px solid var(--border); border-radius: 0; background: none;
+      font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); pointer-events: none;
     }
-    .nav-group-name.has-icon { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
-    .nav-group ~ a, .nav-group ~ .nav-item > a { padding-left: 40px; }
-    /* Sub-pages are always listed, one step further in, with a short line marking them as the item's. */
-    .nav-item { display: contents; }
-    .nav-sub, .nav-item:hover .nav-sub { display: block; position: static; transform: none; padding: 0; }
-    .nav-menu { min-width: 0; padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none; }
-    .nav-menu a { position: relative; padding-left: 60px; }
-    .nav-menu a::before {
-      content: ''; position: absolute; left: 44px; top: 50%; width: 8px; height: 1px; background: var(--border);
-    }
+    .caret { display: none; }
+    .nav-panel, .nav-drop:hover .nav-panel { display: block; position: static; padding-top: 6px; }
+    .nav-tiles { width: auto; padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none; }
   }
   .site-footer { border-top: 1px solid var(--border); padding: 20px 0; color: var(--muted); font-size: 0.85rem; }
   .site-footer .container { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .site-footer a { color: var(--muted); text-decoration: none; }
   .site-footer a:hover { color: var(--accent); }
+  .footer-link { display: inline-flex; align-items: center; gap: 6px; }
+  .footer-icon { width: 15px; height: 15px; fill: var(--accent); }
   .site-footer .dot { color: var(--accent); font-size: 0.6rem; align-self: center; }
 </style>

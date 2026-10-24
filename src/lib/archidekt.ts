@@ -31,15 +31,26 @@ async function withSlot<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
+// The deck data the live site was last built with (pages/decks.json.ts). Any deck Archidekt doesn't
+// answer for keeps its last good art, commanders and date instead of going blank.
+const LAST_GOOD = 'https://aethernal.net/decks.json';
+let lastGood: Promise<Record<string, DeckInfo>> | null = null;
+const loadLastGood = () =>
+  (lastGood ??= fetch(LAST_GOOD, { signal: AbortSignal.timeout(15_000) })
+    .then((res) => (res.ok ? res.json() : {}))
+    .catch(() => ({})));
+
 // Archidekt card uids are Scryfall ids, and Scryfall's image CDN is keyed by them.
 const scryfallImage = (uid: string) => `https://cards.scryfall.io/normal/front/${uid[0]}/${uid[1]}/${uid}.jpg`;
 
 async function fetchDeck(id: number): Promise<DeckInfo> {
+  let reason = '';
   for (let attempt = 0; attempt < 4; attempt++) {
     try {
       const res = await fetch(`https://archidekt.com/api/decks/${id}/`, {
         signal: AbortSignal.timeout(15_000),
       });
+      reason = `HTTP ${res.status}`;
       if (res.status === 429 || res.status >= 500) {
         await sleep(1000 * 2 ** attempt);
         continue;
@@ -50,12 +61,14 @@ async function fetchDeck(id: number): Promise<DeckInfo> {
         .filter((c: any) => (c.categories ?? []).includes('Commander'))
         .map((c: any) => ({ name: c.card.oracleCard.name, image: scryfallImage(c.card.uid) }));
       return { art: deck.customFeatured || deck.featured || null, commanders, updatedAt: deck.updatedAt ?? null };
-    } catch {
+    } catch (err) {
+      reason = (err as Error).message;
       await sleep(1000 * 2 ** attempt);
     }
   }
-  console.warn(`[archidekt] could not load deck ${id}`);
-  return { art: null, commanders: [], updatedAt: null };
+  const saved = (await loadLastGood())[id];
+  console.warn(`[archidekt] could not load deck ${id} (${reason})${saved ? ", using the live site's last copy" : ''}`);
+  return saved ?? { art: null, commanders: [], updatedAt: null };
 }
 
 export function deckInfo(id: number): Promise<DeckInfo> {

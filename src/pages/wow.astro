@@ -17,8 +17,8 @@ const retail = fetched && sortRoster(fetched.filter((c) => (c.game ?? 'retail') 
 const forever = sortRoster((fetched ?? []).filter((c) => c.game === 'forever'), owners);
 const foreverListed = blizzardCharacters.some((c) => c.game === 'forever');
 ---
-<Base title="World of Warcraft" description="Live World of Warcraft character profiles on Retail, Forever and the Aethernal server.">
-  <h1>World of Warcraft</h1>
+<Base title="Pat & Mimi's Characters" description="Pat and Mimi's live World of Warcraft character profiles on Retail, Forever and the Aethernal server.">
+  <h1>Pat &amp; Mimi's Characters</h1>
   <p class="lead">Our characters on Retail, Forever and Aethernal.</p>
 
   <OwnerFilter owners={owners} />
