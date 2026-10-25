@@ -19,7 +19,7 @@ export interface BlizzardCharacter {
 
 export const blizzardCharacters: BlizzardCharacter[] = [
   { name: 'chakraa', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
-  { name: 'melodie', realm: 'frostwolf', region: 'us', namespace: 'profile-us', owner: 'Pat' },
+  { name: 'clo', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
   { name: 'connard', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
 ];
 
