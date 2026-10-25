@@ -10,13 +10,13 @@ const color = classColor(c.className);
 const lastSeen = c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA', { dateStyle: 'medium' }) : null;
 
 const DIFF_SHORT: Record<string, string> = { LFR: 'LFR', NORMAL: 'N', HEROIC: 'H', MYTHIC: 'M' };
-// Headline for the collapsed raid bar: the newest raid's hardest difficulty with any kills.
+// Headline for the collapsed raid bar: the newest raid's hardest difficulty with any kills (none if no kills).
 const raids = (!c.maxLevel || c.level >= c.maxLevel) ? (c.raids?.raids ?? []) : [];
 const headline = (() => {
   const raid = raids[0];
   if (!raid) return null;
   const best = [...raid.progress].reverse().find((p: any) => p.killed > 0);
-  return best ? `${best.killed}/${best.total} ${DIFF_SHORT[best.difficulty]}` : `0/${raid.progress[0]?.total ?? 0}`;
+  return best ? `${best.killed}/${best.total} ${DIFF_SHORT[best.difficulty]}` : null;
 })();
 // Endgame sections only for characters at the level cap (taken from the journal's newest raids,
 // so it follows new expansions). If the cap couldn't be determined, show them anyway.
@@ -56,7 +56,6 @@ const mplus = atCap ? c.mythicPlus : null;
           <details class="acc">
             <summary>
               <span>Mythic+</span>
-              <span class="sum-value">{mplus.runs.length} {mplus.runs.length === 1 ? 'dungeon' : 'dungeons'}</span>
             </summary>
             {mplus.runs.length ? (
               <table class="rows">
@@ -80,7 +79,7 @@ const mplus = atCap ? c.mythicPlus : null;
           <details class="acc">
             <summary>
               <span>Raids <span class="muted small">· {c.raids.expansion}</span></span>
-              <span class="sum-value">{headline}</span>
+              {headline && <span class="sum-value">{headline}</span>}
             </summary>
             <table class="rows raids">
               <thead>
