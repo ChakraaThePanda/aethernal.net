@@ -3,6 +3,22 @@ import Base from '../layouts/Base.astro';
 import DeckCard from '../components/DeckCard.astro';
 import OwnerFilter from '../components/OwnerFilter.astro';
 import { players } from '../data/decks';
+import { deckInfo, usd } from '../lib/archidekt';
+
+// What the stats charts and the per-player totals work from. Precons count, like in the spreadsheet.
+const decks = await Promise.all(players.flatMap((p) => [
+  ...p.decks.map((d) => ({ deck: d, owner: p.name, precon: false })),
+  ...(p.precons ?? []).map((d) => ({ deck: d, owner: p.name, precon: true })),
+]).map(async ({ deck, owner, precon }) => {
+  const { commanders, colors, price } = await deckInfo(deck.id);
+  return { owner, precon, colors: commanders.length ? colors : null, price };
+}));
+
+const totals = new Map(players.map((p) => {
+  const own = decks.filter((d) => d.owner === p.name);
+  return [p.name, { count: own.length, value: own.reduce((sum, d) => sum + (d.price ?? 0), 0) }];
+}));
+const plural = (n: number) => `${n} deck${n === 1 ? '' : 's'}`;
 ---
 <Base title="MTG Decks" description="Commander decks from the whole group, on Archidekt.">
   <h1>MTG Decks</h1>
@@ -12,7 +28,10 @@ import { players } from '../data/decks';
 
   {players.map((p) => (
     <section data-filter-item data-owner={p.name}>
-      <h2 class="section-title"><span class="owner-name">{p.name}</span></h2>
+      <h2 class="section-title">
+        <span class="owner-name">{p.name}</span>
+        <span class="deck-total">{plural(totals.get(p.name)!.count)} · {usd(totals.get(p.name)!.value)}</span>
+      </h2>
       <div class="decks">
         {p.decks.map((d) => <DeckCard deck={d} />)}
       </div>
@@ -27,10 +46,129 @@ import { players } from '../data/decks';
     </section>
   ))}
 
+  <section class="stats" aria-labelledby="stats-title">
+    <h2 class="section-title" id="stats-title">Stats</h2>
+    <div class="stats-filter pill-list" role="group" aria-label="Decks to include">
+      {players.map((p) => (
+        <button type="button" class="pill" data-player={p.name} data-owner={p.name} aria-pressed="true">{p.name}</button>
+      ))}
+      <button type="button" class="pill precons-toggle" aria-pressed="true">Precons</button>
+    </div>
+    <p class="stats-summary muted small" aria-live="polite"></p>
+    <div class="charts">
+      <figure class="chart panel">
+        <figcaption>Colors Count</figcaption>
+        <div class="bars" data-chart="colors"></div>
+      </figure>
+      <figure class="chart panel">
+        <figcaption>Amount of Colors per Deck</figcaption>
+        <div class="bars" data-chart="sizes"></div>
+      </figure>
+      <figure class="chart panel wide">
+        <figcaption>Amount of Decks per Color Combination</figcaption>
+        <div class="scroll"><div class="bars" data-chart="combos"></div></div>
+      </figure>
+    </div>
+    <script type="application/json" id="deck-stats" set:html={JSON.stringify(decks)} />
+  </section>
+
   <div id="card-preview" class="card-preview" aria-hidden="true" hidden></div>
 </Base>
 
 <script>
+  // Stats charts. Every player and the precons start included; each pill adds or removes its decks.
+  // Decks with no commander found on Archidekt have no colors (null) and only count toward the total.
+  type StatDeck = { owner: string; precon: boolean; colors: string[] | null; price: number | null };
+  const statDecks: StatDeck[] = JSON.parse(document.getElementById('deck-stats')!.textContent!);
+  const pip = (c: string) => `https://svgs.scryfall.io/card-symbols/${c}.svg`;
+
+  // Bar fills are the pips' own colors.
+  const COLORS = [
+    { code: 'W', name: 'White', fill: '#f8f6d8' },
+    { code: 'U', name: 'Blue', fill: '#c1d7e9' },
+    { code: 'B', name: 'Black', fill: '#cac5c0' },
+    { code: 'R', name: 'Red', fill: '#e49977' },
+    { code: 'G', name: 'Green', fill: '#a3c095' },
+  ];
+  const SIZES = ['Colorless', 'Mono Color', '2 Colors', '3 Colors', '4 Colors', '5 Colors'];
+  const COMBOS: [string, string][] = [
+    ['C', 'Colorless'], ['W', 'White'], ['U', 'Blue'], ['B', 'Black'], ['R', 'Red'], ['G', 'Green'],
+    ['WU', 'Azorius'], ['WB', 'Orzhov'], ['WR', 'Boros'], ['WG', 'Selesnya'], ['UB', 'Dimir'],
+    ['UR', 'Izzet'], ['UG', 'Simic'], ['BR', 'Rakdos'], ['BG', 'Golgari'], ['RG', 'Gruul'],
+    ['WUB', 'Esper'], ['WUR', 'Jeskai'], ['WUG', 'Bant'], ['WBR', 'Mardu'], ['WBG', 'Abzan'],
+    ['WRG', 'Naya'], ['UBR', 'Grixis'], ['UBG', 'Sultai'], ['URG', 'Temur'], ['BRG', 'Jund'],
+    ['WUBR', 'Yore'], ['WUBG', 'Witch'], ['WURG', 'Ink'], ['WBRG', 'Dune'], ['UBRG', 'Glint'],
+    ['WUBRG', '5 Colors'],
+  ];
+
+  interface Bar { label: string; value: number; fill?: string; icons?: string[] }
+
+  const el = <K extends keyof HTMLElementTagNameMap>(tag: K, className: string) =>
+    Object.assign(document.createElement(tag), { className });
+
+  const drawBars = (chart: HTMLElement, bars: Bar[]) => {
+    const max = Math.max(1, ...bars.map((b) => b.value));
+    chart.replaceChildren(...bars.map((b) => {
+      const col = el('div', 'col');
+      col.title = `${b.label}: ${b.value} deck${b.value === 1 ? '' : 's'}`;
+      col.setAttribute('role', 'img');
+      col.setAttribute('aria-label', col.title);
+      const plot = el('div', 'plot');
+      const value = el('span', 'value');
+      value.textContent = String(b.value);
+      const bar = el('div', 'bar');
+      bar.style.height = `${(b.value / max) * 100}%`;
+      if (b.fill) bar.style.background = b.fill;
+      plot.append(value, bar);
+      const x = el('div', 'x');
+      if (b.icons) x.append(...b.icons.map((c) => Object.assign(new Image(14, 14), { src: pip(c), alt: '' })));
+      else x.textContent = b.label;
+      col.append(plot, x);
+      return col;
+    }));
+  };
+
+  const players = new Set(statDecks.map((d) => d.owner));
+  let precons = true;
+  const chart = (name: string) => document.querySelector<HTMLElement>(`[data-chart="${name}"]`)!;
+
+  const update = () => {
+    const picked = statDecks.filter((d) => players.has(d.owner) && (precons || !d.precon));
+    const colored = picked.filter((d) => d.colors);
+    const priced = picked.filter((d) => d.price !== null);
+    const value = priced.reduce((sum, d) => sum + d.price!, 0);
+    const money = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    document.querySelector('.stats-summary')!.textContent = picked.length
+      ? `${picked.length} deck${picked.length === 1 ? '' : 's'} · ${money(value)} total`
+        + (priced.length ? ` · ${money(value / priced.length)} average` : '')
+      : 'Pick at least one player.';
+
+    drawBars(chart('colors'), COLORS.map((c) => ({
+      label: c.name, fill: c.fill, icons: [c.code],
+      value: colored.filter((d) => d.colors!.includes(c.code)).length,
+    })));
+    drawBars(chart('sizes'), SIZES.map((label, n) => ({
+      label, value: colored.filter((d) => d.colors!.length === n).length,
+    })));
+    drawBars(chart('combos'), COMBOS.map(([code, name]) => ({
+      label: `${name} (${code})`, icons: code.split(''),
+      value: colored.filter((d) => (d.colors!.join('') || 'C') === code).length,
+    })));
+  };
+
+  for (const btn of document.querySelectorAll<HTMLButtonElement>('.stats-filter button')) {
+    btn.addEventListener('click', () => {
+      const on = btn.getAttribute('aria-pressed') !== 'true';
+      btn.setAttribute('aria-pressed', String(on));
+      const player = btn.dataset.player;
+      if (!player) precons = on;
+      else if (on) players.add(player);
+      else players.delete(player);
+      update();
+    });
+  }
+  update();
+
   // Full commander card(s) floating next to the cursor. Mouse only: on touch, tapping a deck just
   // opens it.
   if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
@@ -65,6 +203,49 @@ import { players } from '../data/decks';
 
 <style>
   .owner-name { color: var(--owner, var(--text)); }
+  /* The total sits after the title's rule. */
+  .deck-total {
+    order: 1; font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; letter-spacing: 0;
+    color: var(--muted); font-variant-numeric: tabular-nums;
+  }
+
+  .stats { margin-top: 56px; }
+  .stats-filter { margin: -4px 0 8px; }
+  .stats-filter .pill { cursor: pointer; font: inherit; font-size: 0.9rem; }
+  .stats-filter .pill[aria-pressed="true"] {
+    border-color: var(--owner, var(--border-hi)); color: var(--owner, var(--accent)); background: var(--accent-soft);
+  }
+  .stats-filter .pill[aria-pressed="false"] { color: var(--muted); }
+  .precons-toggle { margin-left: 8px; }
+  .stats-summary { margin: 0 0 14px; min-height: 1.4em; }
+  .charts { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 720px) { .charts { grid-template-columns: 1fr; } }
+  .chart { margin: 0; padding: 14px 16px 12px; min-width: 0; }
+  .chart.wide { grid-column: 1 / -1; }
+  .chart figcaption { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.03em; margin-bottom: 10px; }
+  .scroll { overflow-x: auto; }
+  .bars { display: flex; gap: 2px; height: 220px; }
+  [data-chart="combos"] { min-width: 760px; }
+  .bars :global(.col) { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .bars :global(.plot) {
+    flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .bars :global(.bar) {
+    width: min(100%, 44px); background: var(--accent);
+    border-radius: 4px 4px 0 0; transition: height 0.25s ease;
+  }
+  .bars :global(.value) { font-size: 0.8rem; font-variant-numeric: tabular-nums; margin-bottom: 3px; }
+  .bars :global(.col:hover .bar) { filter: brightness(1.15); }
+  /* Fixed label height per chart so every bar shares the baseline. */
+  .bars :global(.x) {
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+    padding-top: 6px; height: 40px; font-size: 0.75rem; color: var(--muted); text-align: center; line-height: 1.2;
+  }
+  [data-chart="colors"] :global(.x) { height: 30px; }
+  [data-chart="colors"] :global(.x img) { width: 18px; height: 18px; }
+  [data-chart="combos"] :global(.x) { height: 84px; }
+  @media (prefers-reduced-motion: reduce) { .bars :global(.bar) { transition: none; } }
   .card-preview {
     position: fixed; top: 0; left: 0; z-index: 50;
     display: flex; gap: 8px; pointer-events: none;

@@ -99,7 +99,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
         <a class="more" href="/mtg/">All decks →</a>
       </div>
       <div class="decks">
-        {recentDecks.map((d) => <DeckCard deck={d.deck} owner={d.owner} />)}
+        {recentDecks.map((d) => <DeckCard deck={d.deck} owner={d.owner} showPrice={false} />)}
       </div>
     </section>
   )}

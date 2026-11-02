@@ -1,15 +1,19 @@
 ---
 import { deckUrl, type Deck } from '../data/decks';
-import { deckInfo } from '../lib/archidekt';
+import { deckInfo, usd } from '../lib/archidekt';
 
 interface Props {
   deck: Deck;
   compact?: boolean;
   owner?: string; // shown as a tag, for lists that mix everyone's decks
+  showPrice?: boolean;
 }
 
-const { deck, compact = false, owner } = Astro.props;
-const { art, commanders } = await deckInfo(deck.id);
+const { deck, compact = false, owner, showPrice = true } = Astro.props;
+const { art, commanders, colors, price: deckPrice } = await deckInfo(deck.id);
+const price = showPrice ? deckPrice : null;
+// Colorless commanders still get a pip, so only decks with no commander found go without.
+const pips = commanders.length ? (colors.length ? colors : ['C']) : [];
 const commanderNames = commanders.map((c) => c.name).join(' & ');
 ---
 <a
@@ -21,7 +25,17 @@ const commanderNames = commanders.map((c) => c.name).join(' & ');
   data-preview-alt={commanderNames || undefined}
 >
   <div class="art" style={art ? `background-image: url('${art}')` : undefined}></div>
-  {owner && <span class="owner-tag" data-owner={owner}>{owner}</span>}
+  {(price !== null || owner) && (
+    <span class="tags">
+      {price !== null && <span class="price" title="TCGplayer price">{usd(price)}</span>}
+      {owner && <span class="owner-tag" data-owner={owner}>{owner}</span>}
+    </span>
+  )}
+  {pips.length > 0 && (
+    <span class="pips" aria-label={`Color identity: ${pips.join('')}`}>
+      {pips.map((c) => <img src={`https://svgs.scryfall.io/card-symbols/${c}.svg`} alt="" width="18" height="18" />)}
+    </span>
+  )}
   <span class="label">
     <span class="name">{deck.name}</span>
     {commanderNames && <span class="commander">{commanderNames}</span>}
@@ -56,10 +70,21 @@ const commanderNames = commanders.map((c) => c.name).join(' & ');
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5), 0 0 18px rgba(var(--accent-rgb), 0.12);
   }
   .deck:hover .art { transform: scale(1.04); }
+  .tags { position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 6px; }
+  .compact .tags { top: 8px; left: 8px; }
+  .price {
+    font-size: 0.75rem; font-weight: 600; font-variant-numeric: tabular-nums;
+    background: rgba(var(--bg-rgb), 0.8); border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px;
+  }
+  .compact .price { font-size: 0.68rem; padding: 0 7px; }
   .owner-tag {
-    position: absolute; top: 10px; right: 10px;
     font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--owner, var(--text)); background: rgba(var(--bg-rgb), 0.8);
     border: 1px solid var(--owner, var(--border)); border-radius: 999px; padding: 1px 9px;
   }
+  /* A box-shadow rather than a drop-shadow filter: the filter rasterizes the pips, blurring them. */
+  .pips { position: absolute; top: 10px; right: 10px; display: flex; gap: 3px; }
+  .pips img { display: block; width: 18px; height: 18px; border-radius: 50%; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); }
+  .compact .pips { top: 8px; right: 8px; gap: 2px; }
+  .compact .pips img { width: 15px; height: 15px; }
 </style>

@@ -10,6 +10,8 @@ export interface Commander {
 export interface DeckInfo {
   art: string | null;
   commanders: Commander[];
+  colors: string[]; // the commanders' combined color identity as WUBRG letters, in that order
+  price: number | null; // TCGplayer total in USD, priced the same way as the MTG spreadsheet
   updatedAt: string | null;
 }
 
@@ -43,6 +45,27 @@ const loadLastGood = () =>
 // Archidekt card uids are Scryfall ids, and Scryfall's image CDN is keyed by them.
 const scryfallImage = (uid: string) => `https://cards.scryfall.io/normal/front/${uid[0]}/${uid[1]}/${uid}.jpg`;
 
+// Matches the spreadsheet's ARCHIDEKT_PRICE: TCGplayer (foil price for foils), falling back to the
+// regular price and then other vendors only when a price is missing. Cards whose categories are all
+// left out of the price on Archidekt (Maybeboard, usually) don't count.
+function deckPrice(deck: any): number {
+  const priceable = new Map<string, boolean>((deck.categories ?? []).map((c: any) => [c.name, !!c.includedInPrice]));
+  let total = 0;
+  for (const row of deck.cards ?? []) {
+    const qty = Number(row.quantity) || 0;
+    const cats: string[] = row.categories ?? [];
+    if (!qty || (cats.length && !cats.some((c) => priceable.get(c) !== false))) continue;
+    const prices = row.card?.prices;
+    if (!prices) continue;
+    const foil = String(row.modifier ?? '').toLowerCase().includes('foil');
+    const key = [foil ? 'tcgfoil' : 'tcg', 'tcg', 'ck', 'cm', 'tcgfoil', 'ckfoil', 'cmfoil'].find((k) => typeof prices[k] === 'number');
+    if (key) total += prices[key] * qty;
+  }
+  return Math.round(total * 100) / 100;
+}
+
+const WUBRG: [string, string][] = [['White', 'W'], ['Blue', 'U'], ['Black', 'B'], ['Red', 'R'], ['Green', 'G']];
+
 async function fetchDeck(id: number): Promise<DeckInfo> {
   let reason = '';
   for (let attempt = 0; attempt < 4; attempt++) {
@@ -57,10 +80,11 @@ async function fetchDeck(id: number): Promise<DeckInfo> {
       }
       if (!res.ok) break;
       const deck = await res.json();
-      const commanders = (deck.cards ?? [])
-        .filter((c: any) => (c.categories ?? []).includes('Commander'))
-        .map((c: any) => ({ name: c.card.oracleCard.name, image: scryfallImage(c.card.uid) }));
-      return { art: deck.customFeatured || deck.featured || null, commanders, updatedAt: deck.updatedAt ?? null };
+      const commanderCards = (deck.cards ?? []).filter((c: any) => (c.categories ?? []).includes('Commander'));
+      const commanders = commanderCards.map((c: any) => ({ name: c.card.oracleCard.name, image: scryfallImage(c.card.uid) }));
+      const identity = new Set<string>(commanderCards.flatMap((c: any) => c.card.oracleCard.colorIdentity ?? []));
+      const colors = WUBRG.filter(([name]) => identity.has(name)).map(([, letter]) => letter);
+      return { art: deck.customFeatured || deck.featured || null, commanders, colors, price: deckPrice(deck), updatedAt: deck.updatedAt ?? null };
     } catch (err) {
       reason = (err as Error).message;
       await sleep(1000 * 2 ** attempt);
@@ -68,8 +92,14 @@ async function fetchDeck(id: number): Promise<DeckInfo> {
   }
   const saved = (await loadLastGood())[id];
   console.warn(`[archidekt] could not load deck ${id} (${reason})${saved ? ", using the live site's last copy" : ''}`);
-  return saved ?? { art: null, commanders: [], updatedAt: null };
+  // Copies saved before colors and prices existed don't have them.
+  return saved
+    ? { ...saved, colors: saved.colors ?? [], price: saved.price ?? null }
+    : { art: null, commanders: [], colors: [], price: null, updatedAt: null };
 }
+
+const usdFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+export const usd = (n: number) => usdFormat.format(n);
 
 export function deckInfo(id: number): Promise<DeckInfo> {
   if (!cache.has(id)) cache.set(id, withSlot(() => fetchDeck(id)));
