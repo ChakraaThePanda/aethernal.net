@@ -21,6 +21,12 @@ export const blizzardCharacters: BlizzardCharacter[] = [
   { name: 'chakraa', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
   { name: 'clo', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
   { name: 'connard', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
+  // WoW Forever (launches 2026-11-04): first + last names on region-wide ruleset megaservers.
+  // Blizzard hasn't published the Forever profile namespace, realm slug or how two-part names go
+  // in the URL yet, so namespace and realm are guesses to correct once the API is live.
+  { name: 'Chakraa Arcana', realm: 'normal', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever' },
+  { name: 'Monsieur Fish', realm: 'normal', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever' },
+  { name: 'Madame Chips', realm: 'normal', region: 'us', namespace: 'profile-forever-us', owner: 'Mimi', game: 'forever' },
 ];
 
 // Aethernal characters are fetched live in the browser from the account panel's public API.

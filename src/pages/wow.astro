@@ -14,8 +14,11 @@ const owners = [...new Set(blizzardCharacters.map((c) => c.owner).filter(Boolean
 // game: 'forever' in characters.ts. The page script sorts the Aethernal cards the same way.
 const fetched = loadRetail()?.characters;
 const retail = fetched && sortRoster(fetched.filter((c) => (c.game ?? 'retail') === 'retail'), owners);
-const forever = sortRoster((fetched ?? []).filter((c) => c.game === 'forever'), owners);
-const foreverListed = blizzardCharacters.some((c) => c.game === 'forever');
+// Failed Forever lookups are hidden rather than shown as error cards: the Forever API details are
+// still guesses, so until a profile loads the section just lists who's coming.
+const forever = sortRoster((fetched ?? []).filter((c) => c.game === 'forever' && !c.error), owners);
+const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
+const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,]*)$/, ' and $1');
 ---
 <Base title="Pat & Mimi's Characters" description="Pat and Mimi's live World of Warcraft character profiles on Retail, Forever and the Aethernal server.">
   <h1>Pat &amp; Mimi's Characters</h1>
@@ -34,7 +37,7 @@ const foreverListed = blizzardCharacters.some((c) => c.game === 'forever');
     )}
   </section>
 
-  {foreverListed && (
+  {foreverListed.length > 0 && (
     <section data-filter-group>
       <h2 class="section-title">Forever</h2>
       {forever.length ? (
@@ -42,7 +45,7 @@ const foreverListed = blizzardCharacters.some((c) => c.game === 'forever');
           {forever.map((c: any) => <RetailCharacter c={c} />)}
         </div>
       ) : (
-        <p class="panel empty muted">Forever profiles appear here after the next deploy fetches them from Battle.net.</p>
+        <p class="panel empty muted">{foreverNames} show up here once their Forever profiles are on Battle.net.</p>
       )}
     </section>
   )}

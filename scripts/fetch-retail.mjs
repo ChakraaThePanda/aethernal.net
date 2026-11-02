@@ -158,7 +158,7 @@ function buildMythicPlus(keystone, season) {
 }
 
 async function fetchCharacter(api, c) {
-  const base = `/profile/wow/character/${c.realm}/${c.name.toLowerCase()}`;
+  const base = `/profile/wow/character/${c.realm}/${encodeURIComponent(c.name.toLowerCase())}`;
   const profile = await api(base);
   if (!profile) return { ...c, error: 'Character not found (it may need to log in once, or be level 10+).' };
 
@@ -200,7 +200,7 @@ async function fetchCharacter(api, c) {
       quality: item.quality.type,
       itemLevel: item.level?.value ?? null,
     })),
-    profileUrl: `https://worldofwarcraft.blizzard.com/en-${c.region}/character/${c.region}/${c.realm}/${c.name.toLowerCase()}`,
+    profileUrl: `https://worldofwarcraft.blizzard.com/en-${c.region}/character/${c.region}/${c.realm}/${encodeURIComponent(c.name.toLowerCase())}`,
   };
 }
 
