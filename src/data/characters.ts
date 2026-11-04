@@ -15,6 +15,8 @@ export interface BlizzardCharacter {
   namespace: string;
   owner: string;
   game?: BlizzardGame;
+  // Forever has no servers, just region-wide rulesets; shown on the card in place of the realm.
+  ruleset?: string;
 }
 
 export const blizzardCharacters: BlizzardCharacter[] = [
@@ -24,9 +26,9 @@ export const blizzardCharacters: BlizzardCharacter[] = [
   // WoW Forever (launches 2026-11-04): first + last names on region-wide ruleset megaservers.
   // Blizzard hasn't published the Forever profile namespace, realm slug or how two-part names go
   // in the URL yet, so namespace and realm are guesses to correct once the API is live.
-  { name: 'Chakraa Arcana', realm: 'normal', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever' },
-  { name: 'Monsieur Fish', realm: 'normal', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever' },
-  { name: 'Madame Chips', realm: 'normal', region: 'us', namespace: 'profile-forever-us', owner: 'Mimi', game: 'forever' },
+  { name: 'Chakraa Arcana', realm: 'normal', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'Normal' },
+  { name: 'Monsieur Fish', realm: 'normal', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'Normal' },
+  { name: 'Madame Chips', realm: 'normal', region: 'us', namespace: 'profile-forever-us', owner: 'Mimi', game: 'forever', ruleset: 'Normal' },
 ];
 
 // Aethernal characters are fetched live in the browser from the account panel's public API.

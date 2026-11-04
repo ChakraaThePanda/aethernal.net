@@ -181,6 +181,7 @@ async function fetchCharacter(api, c) {
     owner: c.owner,
     game: c.game || 'retail',
     realm: profile.realm.name,
+    ruleset: c.ruleset ?? null,
     level: profile.level,
     race: profile.race.name,
     className: profile.character_class.name,

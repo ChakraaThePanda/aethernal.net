@@ -7,6 +7,8 @@ interface Props {
 
 const { c } = Astro.props;
 const color = classColor(c.className);
+// Forever characters live on a ruleset rather than a server, so that goes where the realm would.
+const where = c.ruleset ? `${c.ruleset} ruleset` : c.realm;
 const lastSeen = c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA', { dateStyle: 'medium' }) : null;
 
 const DIFF_SHORT: Record<string, string> = { LFR: 'LFR', NORMAL: 'N', HEROIC: 'H', MYTHIC: 'M' };
@@ -26,7 +28,7 @@ const mplus = atCap ? c.mythicPlus : null;
 {c.error ? (
   <article class="char panel">
     <div class="body">
-      <h3 class="cname">{c.name} <span class="muted small">{c.realm}</span></h3>
+      <h3 class="cname">{c.name} <span class="muted small">{where}</span></h3>
       <p class="muted">{c.error}</p>
     </div>
   </article>
@@ -42,7 +44,7 @@ const mplus = atCap ? c.mythicPlus : null;
           <div class="sub">
             Level {c.level} {c.race} <span class="cls">{c.spec ? `${c.spec} ` : ''}{c.className}</span>
           </div>
-          <div class="sub muted">{c.realm}{c.guild && <> · &lt;{c.guild}&gt;</>}</div>
+          <div class="sub muted">{where}{c.guild && <> · &lt;{c.guild}&gt;</>}</div>
         </div>
       </header>
 
