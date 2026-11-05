@@ -1,10 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
-import RetailCharacter from '../components/RetailCharacter.astro';
+import ModernCharacter from '../components/ModernCharacter.astro';
 import OwnerFilter from '../components/OwnerFilter.astro';
 import { aethernalApi, blizzardCharacters } from '../data/characters';
 import { sortRoster } from '../lib/wow';
-import { loadRetail } from '../lib/retail';
+import { loadModern } from '../lib/modern';
 
 // Everyone who owns a Battle.net character, for the filter buttons. Aethernal owners come from the
 // realm API and are added once it answers.
@@ -12,28 +12,28 @@ const owners = [...new Set(blizzardCharacters.map((c) => c.owner).filter(Boolean
 
 // Battle.net characters split by game. The Forever section only shows once a character has
 // game: 'forever' in characters.ts. The page script sorts the Aethernal cards the same way.
-const fetched = loadRetail()?.characters;
-const retail = fetched && sortRoster(fetched.filter((c) => (c.game ?? 'retail') === 'retail'), owners);
+const fetched = loadModern()?.characters;
+const modern = fetched && sortRoster(fetched.filter((c) => (c.game ?? 'modern') === 'modern'), owners);
 // Failed Forever lookups are hidden rather than shown as error cards: a character only shows up on
 // the API once it has logged in at level 10+, so until then the section just lists who's coming.
 const forever = sortRoster((fetched ?? []).filter((c) => c.game === 'forever' && !c.error), owners);
 const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
 const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,]*)$/, ' and $1');
 ---
-<Base title="Pat & Mimi's Characters" description="Pat and Mimi's live World of Warcraft character profiles on Retail, Forever and the Aethernal server.">
+<Base title="Pat & Mimi's Characters" description="Pat and Mimi's live World of Warcraft character profiles on Modern, Forever and the Aethernal server.">
   <h1>Pat &amp; Mimi's Characters</h1>
-  <p class="lead">Our characters on Retail, Forever and Aethernal.</p>
+  <p class="lead">Our characters on Modern, Forever and Aethernal.</p>
 
   <OwnerFilter owners={owners} />
 
   <section data-filter-group>
-    <h2 class="section-title">Retail</h2>
-    {retail ? (
+    <h2 class="section-title">Modern</h2>
+    {modern ? (
       <div class="chars">
-        {retail.map((c: any) => <RetailCharacter c={c} />)}
+        {modern.map((c: any) => <ModernCharacter c={c} />)}
       </div>
     ) : (
-      <p class="panel empty muted">Retail profiles appear here after the next deploy fetches them from Battle.net.</p>
+      <p class="panel empty muted">Modern profiles appear here after the next deploy fetches them from Battle.net.</p>
     )}
   </section>
 
@@ -42,7 +42,7 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
       <h2 class="section-title">Forever</h2>
       {forever.length ? (
         <div class="chars">
-          {forever.map((c: any) => <RetailCharacter c={c} />)}
+          {forever.map((c: any) => <ModernCharacter c={c} />)}
         </div>
       ) : (
         <p class="panel empty muted">{foreverNames} show up here once their Forever profiles are on Battle.net.</p>

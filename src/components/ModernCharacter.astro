@@ -2,7 +2,7 @@
 import { classColor, qualityVar, classIconUrl, raceIconUrl, rulesetLabel } from '../lib/wow';
 
 interface Props {
-  c: any; // one entry from src/data/generated/retail.json
+  c: any; // one entry from src/data/generated/modern.json
 }
 
 const { c } = Astro.props;
@@ -87,7 +87,7 @@ const mplus = atCap ? c.mythicPlus : null;
         {mplus && (
           <details class="acc">
             <summary>
-              <span>Mythic+</span>
+              <span>Mythic+{mplus.season && <span class="muted small"> · {mplus.season}</span>}</span>
             </summary>
             {mplus.runs.length ? (
               <table class="rows">

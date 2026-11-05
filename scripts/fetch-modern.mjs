@@ -1,5 +1,5 @@
 // Fetches the Blizzard characters listed in src/data/characters.ts from the Battle.net API and
-// writes src/data/generated/retail.json for the WoW page to render at build time.
+// writes src/data/generated/modern.json for the WoW page to render at build time.
 //
 // Needs BLIZZARD_CLIENT_ID and BLIZZARD_CLIENT_SECRET (GitHub Actions secrets in CI, or a local
 // .env file). Without them it writes nothing and the page shows a notice.
@@ -11,11 +11,11 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 
 const ROOT = new URL('..', import.meta.url);
 const OUT_DIR = new URL('src/data/generated/', ROOT);
-const OUT_FILE = new URL('retail.json', OUT_DIR);
+const OUT_FILE = new URL('modern.json', OUT_DIR);
 
 const { BLIZZARD_CLIENT_ID: clientId, BLIZZARD_CLIENT_SECRET: clientSecret } = process.env;
 if (!clientId || !clientSecret) {
-  console.warn('BLIZZARD_CLIENT_ID / BLIZZARD_CLIENT_SECRET not set, skipping retail fetch.');
+  console.warn('BLIZZARD_CLIENT_ID / BLIZZARD_CLIENT_SECRET not set, skipping modern fetch.');
   process.exit(0);
 }
 
@@ -29,7 +29,7 @@ async function loadCharacterList() {
     return obj;
   });
   return entries
-    .map((c) => ({ game: 'retail', ...c }))
+    .map((c) => ({ game: 'modern', ...c }))
     .filter((c) => c.name && (c.realm || c.game === 'forever'));
 }
 
@@ -135,7 +135,23 @@ function buildRaids(tier, progress) {
   };
 }
 
-function buildMythicPlus(keystone, season) {
+// The current Mythic+ season from the game data API (dynamic namespace), so the label follows
+// new seasons on its own. Cached per namespace since it's the same for every character.
+const seasonCache = new Map();
+function currentKeystoneSeason(api, dynamicNs) {
+  if (!seasonCache.has(dynamicNs)) {
+    seasonCache.set(dynamicNs, (async () => {
+      const index = await api('/data/wow/mythic-keystone/season/index', dynamicNs);
+      const id = index?.current_season?.id;
+      if (!id) return null;
+      const season = await api(`/data/wow/mythic-keystone/season/${id}`, dynamicNs);
+      return { id, name: season?.season_name ?? null };
+    })().catch((err) => (console.warn(`  keystone season: ${err.message}`), null)));
+  }
+  return seasonCache.get(dynamicNs);
+}
+
+function buildMythicPlus(keystone, season, current) {
   if (!keystone?.current_mythic_rating) return null;
   // Older seasons listed a Fortified and a Tyrannical run per dungeon; keep the better one.
   const best = new Map();
@@ -153,13 +169,14 @@ function buildMythicPlus(keystone, season) {
     }
   }
   return {
+    season: current?.name ?? null,
     value: Math.round(keystone.current_mythic_rating.rating),
     color: rgb(keystone.current_mythic_rating.color),
     runs: [...best.values()].sort((a, b) => b.rating - a.rating),
   };
 }
 
-// Retail characters live at /{realm}/{name}. Forever has no realms: the path is just a slug of
+// Modern characters live at /{realm}/{name}. Forever has no realms: the path is just a slug of
 // the full name, spaces turned into hyphens ('Monsieur Fish' -> 'monsieur-fish').
 const characterSlug = (name) => encodeURIComponent(name.toLowerCase().trim().replace(/\s+/g, '-'));
 
@@ -177,7 +194,8 @@ async function fetchCharacter(api, c) {
 
   const settle = (p) => p.catch((err) => (console.warn(`  ${c.name}: ${err.message}`), null));
   const staticNs = (c.namespace || `profile-${c.region}`).replace(/^profile-/, 'static-');
-  const [media, equipment, keystone, raids, tier, specs] = await Promise.all([
+  const dynamicNs = staticNs.replace(/^static-/, 'dynamic-');
+  const [media, equipment, keystone, raids, tier, specs, currentSeason] = await Promise.all([
     settle(api(`${base}/character-media`)),
     settle(api(`${base}/equipment`)),
     settle(api(`${base}/mythic-keystone-profile`)),
@@ -185,12 +203,14 @@ async function fetchCharacter(api, c) {
     latestRaidTier(api, staticNs),
     // Forever profiles have no active_spec; the active one is on the specializations endpoint.
     profile.active_spec ? null : settle(api(`${base}/specializations`)),
+    currentKeystoneSeason(api, dynamicNs),
   ]);
   const activeSpec = profile.active_spec?.name
     ?? specs?.specialization_groups?.find((g) => g.is_active)?.specializations?.[0]?.specialization?.name
     ?? null;
-  // Per-dungeon best runs live on the season endpoint; the newest season is the current one.
-  const seasonId = keystone?.seasons?.map((s) => s.id).sort((a, b) => b - a)[0];
+  // Per-dungeon best runs live on the season endpoint. Use the current season when the game data
+  // API gives it (no runs there yet means none this season), else the character's newest season.
+  const seasonId = currentSeason?.id ?? keystone?.seasons?.map((s) => s.id).sort((a, b) => b - a)[0];
   const season = seasonId ? await settle(api(`${base}/mythic-keystone-profile/season/${seasonId}`)) : null;
   const asset = (key) => media?.assets?.find((a) => a.key === key)?.value ?? null;
 
@@ -198,7 +218,7 @@ async function fetchCharacter(api, c) {
     // Forever splits the name: name is the first name, surname the last.
     name: [profile.name, profile.surname].filter(Boolean).join(' '),
     owner: c.owner,
-    game: c.game || 'retail',
+    game: c.game || 'modern',
     realm: profile.realm?.name ?? null,
     ruleset: profile.ruleset?.name ?? c.ruleset ?? null,
     level: profile.level,
@@ -212,7 +232,7 @@ async function fetchCharacter(api, c) {
     avatar: asset('avatar'),
     render: asset('main-raw') ?? asset('main'),
     maxLevel: tier?.maxLevel ?? null,
-    mythicPlus: buildMythicPlus(keystone, season),
+    mythicPlus: buildMythicPlus(keystone, season, currentSeason),
     raids: buildRaids(tier, raids),
     equipment: (equipment?.equipped_items ?? []).map((item) => ({
       slot: item.slot.name,
@@ -242,4 +262,4 @@ for (const c of characters) {
 
 await mkdir(OUT_DIR, { recursive: true });
 await writeFile(OUT_FILE, JSON.stringify({ characters: results }, null, 2));
-console.log(`Wrote ${results.length} character(s) to src/data/generated/retail.json`);
+console.log(`Wrote ${results.length} character(s) to src/data/generated/modern.json`);

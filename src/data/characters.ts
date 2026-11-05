@@ -1,12 +1,12 @@
 // Characters tracked on the WoW page.
 //
-// Retail (and later WoW Forever / Classic) characters are fetched from the Battle.net API by
-// scripts/fetch-retail.mjs during each deploy. `namespace` is the Battle.net profile namespace:
-// 'profile-us' for retail, 'profile-classic-us' / 'profile-classic1x-us' for Classic flavors.
-// `game` picks the section the card shows in on the WoW page; it defaults to 'retail'.
-export type BlizzardGame = 'retail' | 'forever';
+// Modern (and later WoW Forever / Classic) characters are fetched from the Battle.net API by
+// scripts/fetch-modern.mjs during each deploy. `namespace` is the Battle.net profile namespace:
+// 'profile-us' for modern, 'profile-classic-us' / 'profile-classic1x-us' for Classic flavors.
+// `game` picks the section the card shows in on the WoW page; it defaults to 'modern'.
+export type BlizzardGame = 'modern' | 'forever';
 
-export const GAME_LABELS: Record<BlizzardGame, string> = { retail: 'Retail', forever: 'Forever' };
+export const GAME_LABELS: Record<BlizzardGame, string> = { modern: 'Modern', forever: 'Forever' };
 
 export interface BlizzardCharacter {
   name: string;

@@ -39,7 +39,7 @@ export const nav: NavItem[] = [
     label: 'World of Warcraft',
     image: '/images/wow-icon.png',
     tiles: [
-      { href: '/wow/', label: 'Our Characters', description: 'Pat and Mimi on Retail, Forever and Aethernal', icon: 'characters' },
+      { href: '/wow/', label: 'Our Characters', description: 'Pat and Mimi on Modern, Forever and Aethernal', icon: 'characters' },
       { href: 'https://wow.aethernal.net/', label: 'Account Panel', description: 'Sign up or manage your account', icon: 'realm', section: 'Aethernal server' },
       { href: 'https://wow.aethernal.net/armory', label: 'Armory', description: 'Look up Aethernal characters and guilds', icon: 'armory' },
     ],

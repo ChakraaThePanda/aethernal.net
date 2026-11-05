@@ -5,14 +5,14 @@ import { players } from '../data/decks';
 import { aethernalApi, GAME_LABELS } from '../data/characters';
 import { deckInfo } from '../lib/archidekt';
 import { recentRepos } from '../lib/github';
-import { loadRetail } from '../lib/retail';
+import { loadModern } from '../lib/modern';
 import { classColor, classIconUrl, rulesetLabel } from '../lib/wow';
 
 const PANEL = 'https://wow.aethernal.net';
 
-// Battle.net (Retail and Forever) characters newest login first. The page script re-sorts everyone (Aethernal included) by
+// Battle.net (Modern and Forever) characters newest login first. The page script re-sorts everyone (Aethernal included) by
 // last played once the server answers; the roster shows the top five (the height of the realm box).
-const retail = (loadRetail()?.characters ?? [])
+const modern = (loadModern()?.characters ?? [])
   .filter((c) => !c.error)
   .sort((a, b) => (b.lastLogin ?? 0) - (a.lastLogin ?? 0));
 
@@ -62,12 +62,12 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
         <a class="more" href="/wow/">All characters →</a>
       </div>
       <ul class="roster">
-        {retail.map((c) => (
+        {modern.map((c) => (
           <li style={`--class: ${classColor(c.className)}`} data-played={c.lastLogin ?? 0}>
             <img class="portrait" src={c.avatar ?? classIconUrl(c.className)} alt="" width="36" height="36" loading="lazy" />
             <span class="who">
               <span class="cname">{c.name}</span>
-              <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · {GAME_LABELS[c.game as keyof typeof GAME_LABELS] ?? 'Retail'}</span>
+              <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · {GAME_LABELS[c.game as keyof typeof GAME_LABELS] ?? 'Modern'}</span>
             </span>
             {c.itemLevel && <span class="ilvl" title="Item level">{c.itemLevel}</span>}
             <span class="tags">{rulesetLabel(c.ruleset) === 'Hardcore' && <span class="hardcore" title="Hardcore">HC</span>}{c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}</span>

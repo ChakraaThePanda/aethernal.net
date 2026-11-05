@@ -1,4 +1,4 @@
-// Shared WoW display helpers for the retail (build-time) and Aethernal (browser) widgets.
+// Shared WoW display helpers for the modern (build-time) and Aethernal (browser) widgets.
 
 export const CLASS_COLORS: Record<string, string> = {
   'Warrior': '#c69b6d',

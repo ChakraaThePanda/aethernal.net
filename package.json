@@ -8,7 +8,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "fetch:retail": "node --env-file-if-exists=.env scripts/fetch-retail.mjs"
+    "fetch:modern": "node --env-file-if-exists=.env scripts/fetch-modern.mjs"
   },
   "dependencies": {
     "astro": "^7.3.6"
