@@ -1,5 +1,5 @@
 ---
-import { classColor, qualityVar, classIconUrl, raceIconUrl, rulesetLabel, sortEquipment } from '../lib/wow';
+import { classColor, qualityVar, classIconUrl, raceIconUrl, rulesetLabel, raceLabel, sortEquipment } from '../lib/wow';
 
 interface Props {
   c: any; // one entry from src/data/generated/modern.json
@@ -57,7 +57,7 @@ const mplus = atCap ? c.mythicPlus : null;
         <div class="ident">
           <h3 class="cname">{c.name}</h3>
           <div class="sub">
-            Level {c.level} {c.race} <span class="cls">{c.spec ? `${c.spec} ` : ''}{c.className}</span>
+            Level {c.level} <span title={c.race}>{raceLabel(c.race)}</span> <span class="cls">{c.spec ? `${c.spec} ` : ''}{c.className}</span>
           </div>
           <div class="sub muted">{where}{c.guild && <> · &lt;{c.guild}&gt;</>}</div>
         </div>

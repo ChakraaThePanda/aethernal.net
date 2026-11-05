@@ -47,6 +47,14 @@ export const raceIconUrl = (race: string, gender?: string | null) =>
 
 // Forever rulesets, shown on the card in place of the realm. The API's ruleset name (or the
 // fallback in characters.ts) is mapped to one of: PVE, PVP, RP-PVE, RP-PVP, Hardcore.
+// Race as shown on the cards. The Skyborne races ("High Order Skyborne", ...) are too long for the
+// card's one-line subtitle, so their prefix is cut to its initial: "H Skyborne".
+export function raceLabel(race?: string | null): string {
+  const r = race ?? '';
+  const m = /^(\w)\w*(?: \w+)* (Skyborne)$/.exec(r);
+  return m ? `${m[1]} ${m[2]}` : r;
+}
+
 export function rulesetLabel(ruleset?: string | null): string | null {
   if (!ruleset) return null;
   const r = ruleset.toLowerCase();

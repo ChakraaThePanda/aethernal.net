@@ -64,7 +64,7 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
 </Base>
 
 <script>
-  import { CLASS_COLORS, sortRoster, classIconUrl, raceIconUrl, sortEquipment } from '../lib/wow';
+  import { CLASS_COLORS, sortRoster, classIconUrl, raceIconUrl, raceLabel, sortEquipment } from '../lib/wow';
 
   // Aethernal: fetched live from the account panel's public API.
   const root = document.getElementById('aethernal');
@@ -130,7 +130,7 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
               <h3 class="cname">${armoryLink('character', c.name, esc(c.name))}
                 <span class="dot ${c.online ? 'on' : ''}" title="${c.online ? 'Online' : 'Offline'}"></span>
               </h3>
-              <div class="sub">Level ${c.level} ${esc(c.race)} <span class="cls">${c.spec ? `${esc(c.spec)} ` : ''}${esc(c.className)}</span></div>
+              <div class="sub">Level ${c.level} <span title="${esc(c.race)}">${esc(raceLabel(c.race))}</span> <span class="cls">${c.spec ? `${esc(c.spec)} ` : ''}${esc(c.className)}</span></div>
               ${c.guild ? `<div class="sub muted">${armoryLink('guild', c.guild, `&lt;${esc(c.guild)}&gt;`)}</div>` : ''}
             </div>
           </header>
