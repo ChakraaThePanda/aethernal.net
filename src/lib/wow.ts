@@ -31,7 +31,10 @@ const QUALITY_TYPES = ['POOR', 'COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY'
 export const qualityVar = (q: string | number) =>
   `var(--q${typeof q === 'number' ? q : Math.max(0, QUALITY_TYPES.indexOf(q))})`;
 
-// Wowhead icons for characters without a Blizzard render (the Aethernal server).
+// Wowhead icons for characters without a Blizzard render (the Aethernal server, and Forever,
+// whose character-media endpoint doesn't answer yet).
 const ICONS = 'https://wow.zamimg.com/images/wow/icons/large';
 const slug = (s: string) => s.toLowerCase().replace(/\s+/g, '');
 export const classIconUrl = (className: string) => `${ICONS}/classicon_${slug(className)}.jpg`;
+export const raceIconUrl = (race: string, gender?: string | null) =>
+  `${ICONS}/race_${race === 'Undead' ? 'scourge' : slug(race)}_${gender === 'Female' ? 'female' : 'male'}.jpg`;

@@ -203,6 +203,7 @@ async function fetchCharacter(api, c) {
     ruleset: profile.ruleset?.name ?? c.ruleset ?? null,
     level: profile.level,
     race: profile.race.name,
+    gender: profile.gender?.name ?? null, // for the race icon when there's no avatar
     className: profile.character_class.name,
     spec: activeSpec,
     guild: profile.guild?.name ?? null,

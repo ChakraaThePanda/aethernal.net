@@ -1,5 +1,5 @@
 ---
-import { classColor, qualityVar } from '../lib/wow';
+import { classColor, qualityVar, classIconUrl, raceIconUrl } from '../lib/wow';
 
 interface Props {
   c: any; // one entry from src/data/generated/retail.json
@@ -38,7 +38,16 @@ const mplus = atCap ? c.mythicPlus : null;
     {c.render && <div class="render" style={`background-image: url('${c.render}')`} role="img" aria-label={`${c.name} character render`}></div>}
     <div class="body">
       <header>
-        {c.avatar && <img class="avatar" src={c.avatar} alt="" width="56" height="56" loading="lazy" />}
+        {c.avatar ? (
+          <img class="avatar" src={c.avatar} alt="" width="56" height="56" loading="lazy" />
+        ) : (
+          // No Blizzard avatar (Forever's media endpoint 404s for now): class icon with a race
+          // badge, like the Aethernal cards.
+          <div class="portrait">
+            <img class="class-icon" src={classIconUrl(c.className)} alt={c.className} width="56" height="56" loading="lazy" />
+            <img class="race-icon" src={raceIconUrl(c.race, c.gender)} alt={`${c.gender ?? ''} ${c.race}`.trim()} width="24" height="24" loading="lazy" />
+          </div>
+        )}
         <div>
           <h3 class="cname">{c.name}</h3>
           <div class="sub">
@@ -145,6 +154,12 @@ const mplus = atCap ? c.mythicPlus : null;
   .body { position: relative; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
   header { display: flex; gap: 14px; align-items: center; }
   .avatar { border-radius: 8px; border: 2px solid var(--class); flex-shrink: 0; }
+  .portrait { position: relative; flex-shrink: 0; width: 56px; height: 56px; }
+  .class-icon { display: block; width: 56px; height: 56px; border-radius: 8px; border: 2px solid var(--class); }
+  .race-icon {
+    position: absolute; right: -6px; bottom: -6px; width: 24px; height: 24px;
+    border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--border);
+  }
   .cname { margin: 0; font-size: 1.35rem; color: var(--class, var(--text)); }
   .sub { font-size: 0.9rem; }
   .cls { display: block; color: var(--class); font-weight: 600; }

@@ -64,7 +64,7 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
 </Base>
 
 <script>
-  import { CLASS_COLORS, sortRoster } from '../lib/wow';
+  import { CLASS_COLORS, sortRoster, classIconUrl, raceIconUrl } from '../lib/wow';
 
   // Aethernal: fetched live from the account panel's public API.
   const root = document.getElementById('aethernal');
@@ -72,11 +72,8 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
   // AzerothCore has no character renders, so the portrait is Wowhead's class icon with a small
   // race/gender icon in the corner.
-  const ICONS = 'https://wow.zamimg.com/images/wow/icons/large';
-  const slug = (s) => String(s).toLowerCase().replace(/\s+/g, '');
-  const classIcon = (c) => `${ICONS}/classicon_${slug(c.className)}.jpg`;
-  const raceIcon = (c) =>
-    `${ICONS}/race_${c.race === 'Undead' ? 'scourge' : slug(c.race)}_${c.gender === 'Female' ? 'female' : 'male'}.jpg`;
+  const classIcon = (c) => classIconUrl(c.className);
+  const raceIcon = (c) => raceIconUrl(c.race, c.gender);
   // Names and guilds open in the armory on the account panel (same tab, like the menu's Server link).
   const ARMORY = 'https://wow.aethernal.net/armory';
   const armoryLink = (path, name, text) =>

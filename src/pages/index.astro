@@ -6,7 +6,7 @@ import { aethernalApi, GAME_LABELS } from '../data/characters';
 import { deckInfo } from '../lib/archidekt';
 import { recentRepos } from '../lib/github';
 import { loadRetail } from '../lib/retail';
-import { classColor } from '../lib/wow';
+import { classColor, classIconUrl } from '../lib/wow';
 
 const PANEL = 'https://wow.aethernal.net';
 
@@ -64,7 +64,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
       <ul class="roster">
         {retail.map((c) => (
           <li style={`--class: ${classColor(c.className)}`} data-played={c.lastLogin ?? 0}>
-            {c.avatar ? <img class="portrait" src={c.avatar} alt="" width="36" height="36" loading="lazy" /> : <span class="portrait"></span>}
+            <img class="portrait" src={c.avatar ?? classIconUrl(c.className)} alt="" width="36" height="36" loading="lazy" />
             <span class="who">
               <span class="cname">{c.name}</span>
               <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · {GAME_LABELS[c.game as keyof typeof GAME_LABELS] ?? 'Retail'}</span>
