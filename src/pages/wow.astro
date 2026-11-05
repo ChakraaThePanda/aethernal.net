@@ -74,9 +74,16 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
   // shrinks on its own, down to 13px. Re-run whenever a name's box changes size: first layout,
   // window resizes, cards shown or hidden by the filters.
   const SHARED_MIN = 1.2 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+  // scrollWidth/clientWidth are rounded to whole pixels, which misses text that's a fraction of a
+  // pixel too wide (it still gets an ellipsis), so compare the text's exact width to the box's.
+  const range = document.createRange();
+  const overflows = (el) => {
+    range.selectNodeContents(el);
+    return range.getBoundingClientRect().width > el.getBoundingClientRect().width;
+  };
   const fitsAt = (el, floor) => {
     let size = parseFloat(getComputedStyle(el).fontSize);
-    while (el.scrollWidth > el.clientWidth && size - 0.5 >= floor) {
+    while (overflows(el) && size - 0.5 >= floor) {
       size -= 0.5;
       el.style.fontSize = `${size}px`;
     }
