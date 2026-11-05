@@ -3,6 +3,8 @@
 // and any [data-filter-group] left with nothing visible. Pages that render items later (like the
 // Aethernal cards) call window.addFilterOwners([...]) for any new owners, then window.applyOwnerFilter().
 // The buttons only show once there are at least two owners.
+// Groups can also carry data-section="X": a [data-section-toggle="X"] button (like a section title)
+// then shows only that group, and clicking it again shows every group. This combines with the owner.
 interface Props {
   owners: string[];
 }
@@ -17,15 +19,29 @@ const { owners } = Astro.props;
 <script is:inline>
   (() => {
     let active = '';
+    let section = '';
     window.applyOwnerFilter = () => {
       for (const item of document.querySelectorAll('[data-filter-item]')) {
         item.hidden = Boolean(active) && item.dataset.owner !== active;
       }
       for (const group of document.querySelectorAll('[data-filter-group]')) {
         const items = group.querySelectorAll('[data-filter-item]');
-        group.hidden = items.length > 0 && [...items].every((i) => i.hidden);
+        group.hidden = (Boolean(section) && group.dataset.section !== section)
+          || (items.length > 0 && [...items].every((i) => i.hidden));
       }
     };
+    // Delegated, because this script runs before the sections below it are parsed.
+    document.addEventListener('click', (e) => {
+      const toggle = e.target.closest?.('[data-section-toggle]');
+      if (!toggle) return;
+      section = section === toggle.dataset.sectionToggle ? '' : toggle.dataset.sectionToggle;
+      for (const t of document.querySelectorAll('[data-section-toggle]')) {
+        const on = t.dataset.sectionToggle === section;
+        t.setAttribute('aria-pressed', String(on));
+        t.title = on ? 'Show all sections' : `Show only ${t.dataset.sectionToggle}`;
+      }
+      window.applyOwnerFilter();
+    });
     const bar = document.querySelector('.owner-filter');
     const buttons = () => bar.querySelectorAll('button');
     const wire = (btn) => btn.addEventListener('click', () => {

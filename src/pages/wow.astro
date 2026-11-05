@@ -26,8 +26,8 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
 
   <OwnerFilter owners={owners} />
 
-  <section data-filter-group>
-    <h2 class="section-title">Modern</h2>
+  <section data-filter-group data-section="Modern">
+    <h2 class="section-title"><button type="button" class="section-toggle" data-section-toggle="Modern" aria-pressed="false" title="Show only Modern">Modern</button></h2>
     {modern ? (
       <div class="chars">
         {modern.map((c: any) => <ModernCharacter c={c} />)}
@@ -38,8 +38,8 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
   </section>
 
   {foreverListed.length > 0 && (
-    <section data-filter-group>
-      <h2 class="section-title">Forever</h2>
+    <section data-filter-group data-section="Forever">
+      <h2 class="section-title"><button type="button" class="section-toggle" data-section-toggle="Forever" aria-pressed="false" title="Show only Forever">Forever</button></h2>
       {forever.length ? (
         <div class="chars">
           {forever.map((c: any) => <ModernCharacter c={c} />)}
@@ -50,8 +50,8 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
     </section>
   )}
 
-  <section data-filter-group>
-    <h2 class="section-title">Aethernal <span id="realm-status" class="realm-status" hidden></span></h2>
+  <section data-filter-group data-section="Aethernal">
+    <h2 class="section-title"><button type="button" class="section-toggle" data-section-toggle="Aethernal" aria-pressed="false" title="Show only Aethernal">Aethernal</button> <span id="realm-status" class="realm-status" hidden></span></h2>
     <div id="aethernal" class="chars" data-api={aethernalApi}>
       <p class="panel empty muted">Contacting the realm…</p>
     </div>
@@ -171,6 +171,13 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
   .chars { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
   /* Also injected by script, hence global. */
   :global(.empty) { padding: 18px 20px; margin: 0; grid-column: 1 / -1; }
+  /* Section titles are buttons: clicking one shows only that section, clicking it again shows all. */
+  .section-toggle {
+    font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit;
+    background: none; border: 0; padding: 0; cursor: pointer;
+  }
+  .section-toggle:hover, .section-toggle[aria-pressed="true"] { color: var(--accent); }
+  .section-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
   .realm-status { font-family: var(--font-body); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; padding: 2px 10px; border-radius: 999px; border: 1px solid; }
   .realm-status.on { color: #86e6a0; border-color: #2a5c38; background: #16281c; }
   .realm-status.off { color: #ff9a9d; border-color: #5c2a2d; background: #2e1414; }

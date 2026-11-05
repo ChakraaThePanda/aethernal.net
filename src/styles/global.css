@@ -156,8 +156,8 @@ details.acc > summary > span:first-child { flex: 1; }
 [data-owner="Mimi"] { --owner: #0070dd; } /* Shaman blue */
 [data-owner="Clo"] { --owner: #aad372; }  /* Hunter green */
 [data-owner="Alex"] { --owner: #c41e3a; } /* Death Knight red */
-[data-owner="Mathew"] { --owner: #8788ee; } /* Warlock purple */
 [data-owner="Blinky"] { --owner: #fff468; } /* Rogue yellow */
+[data-owner="Mathew"] { --owner: #8788ee; } /* Warlock purple */
 [data-owner="Will"] { --owner: #00ff98; }   /* Monk jade */
 .char .owner { color: var(--owner, var(--text)); border-color: var(--owner, var(--border)); }
 
