@@ -42,11 +42,13 @@ export const qualityVar = (q: string | number) =>
 const ICONS = 'https://wow.zamimg.com/images/wow/icons/large';
 const slug = (s: string) => s.toLowerCase().replace(/\s+/g, '');
 export const classIconUrl = (className: string) => `${ICONS}/classicon_${slug(className)}.jpg`;
+// Wowhead names a few race icons differently from the race: Undead is 'scourge', and every
+// Skyborne race ("High Order Skyborne", ...) shares the 'skyborne' icon.
+const raceIconSlug = (race: string) =>
+  race === 'Undead' ? 'scourge' : / Skyborne$/.test(race) ? 'skyborne' : slug(race);
 export const raceIconUrl = (race: string, gender?: string | null) =>
-  `${ICONS}/race_${race === 'Undead' ? 'scourge' : slug(race)}_${gender === 'Female' ? 'female' : 'male'}.jpg`;
+  `${ICONS}/race_${raceIconSlug(race)}_${gender === 'Female' ? 'female' : 'male'}.jpg`;
 
-// Forever rulesets, shown on the card in place of the realm. The API's ruleset name (or the
-// fallback in characters.ts) is mapped to one of: PVE, PVP, RP-PVE, RP-PVP, Hardcore.
 // Race as shown on the cards. The Skyborne races ("High Order Skyborne", ...) are too long for the
 // card's one-line subtitle, so their prefix is cut to its initial: "H Skyborne".
 export function raceLabel(race?: string | null): string {
@@ -55,6 +57,8 @@ export function raceLabel(race?: string | null): string {
   return m ? `${m[1]} ${m[2]}` : r;
 }
 
+// Forever rulesets, shown on the card in place of the realm. The API's ruleset name (or the
+// fallback in characters.ts) is mapped to one of: PVE, PVP, RP-PVE, RP-PVP, Hardcore.
 export function rulesetLabel(ruleset?: string | null): string | null {
   if (!ruleset) return null;
   const r = ruleset.toLowerCase();
