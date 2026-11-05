@@ -5,6 +5,7 @@
 // The buttons only show once there are at least two owners.
 // Groups can also carry data-section="X": a [data-section-toggle="X"] button (like a section title)
 // then shows only that group, and clicking it again shows every group. This combines with the owner.
+// The chosen section is kept in the URL hash (e.g. /wow#forever), so it can be linked to.
 interface Props {
   owners: string[];
 }
@@ -30,18 +31,32 @@ const { owners } = Astro.props;
           || (items.length > 0 && [...items].every((i) => i.hidden));
       }
     };
-    // Delegated, because this script runs before the sections below it are parsed.
-    document.addEventListener('click', (e) => {
-      const toggle = e.target.closest?.('[data-section-toggle]');
-      if (!toggle) return;
-      section = section === toggle.dataset.sectionToggle ? '' : toggle.dataset.sectionToggle;
+    // The chosen section is mirrored in the URL hash (#modern, #forever, ...) so it can be linked to.
+    const setSection = (name) => {
+      section = name;
       for (const t of document.querySelectorAll('[data-section-toggle]')) {
         const on = t.dataset.sectionToggle === section;
         t.setAttribute('aria-pressed', String(on));
         t.title = on ? 'Show all sections' : `Show only ${t.dataset.sectionToggle}`;
       }
       window.applyOwnerFilter();
+    };
+    const fromHash = () => {
+      const hash = decodeURIComponent(location.hash.slice(1)).toLowerCase();
+      const match = [...document.querySelectorAll('[data-section-toggle]')]
+        .find((t) => t.dataset.sectionToggle.toLowerCase() === hash);
+      setSection(match ? match.dataset.sectionToggle : '');
+    };
+    // Delegated, because this script runs before the sections below it are parsed.
+    document.addEventListener('click', (e) => {
+      const toggle = e.target.closest?.('[data-section-toggle]');
+      if (!toggle) return;
+      const next = section === toggle.dataset.sectionToggle ? '' : toggle.dataset.sectionToggle;
+      history.pushState(null, '', next ? `#${next.toLowerCase()}` : location.pathname + location.search);
+      setSection(next);
     });
+    window.addEventListener('popstate', fromHash);
+    if (location.hash) document.addEventListener('DOMContentLoaded', fromHash);
     const bar = document.querySelector('.owner-filter');
     const buttons = () => bar.querySelectorAll('button');
     const wire = (btn) => btn.addEventListener('click', () => {
