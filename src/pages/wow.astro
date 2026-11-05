@@ -103,7 +103,10 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
     document.querySelectorAll('.char .cname').forEach((el) => nameObserver.observe(el));
   };
   fitNames();
+  // Cinzel can arrive after the first fit (common on phones), and swapping it in widens the names
+  // without resizing their boxes, so refit whenever a font finishes loading.
   document.fonts?.ready.then(fitAll);
+  document.fonts?.addEventListener?.('loadingdone', fitAll);
 
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
   // AzerothCore has no character renders, so the portrait is Wowhead's class icon with a small
