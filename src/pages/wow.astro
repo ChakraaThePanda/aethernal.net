@@ -70,10 +70,10 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
   const root = document.getElementById('aethernal');
   const statusEl = document.getElementById('realm-status');
   // Character names stay on one line. They share one size, the one that fits the longest name
-  // (from 1.35rem), but that shared size doesn't go below 1.1rem; a name too long even for that
+  // (from 1.35rem), but that shared size doesn't go below 1.2rem; a name too long even for that (like Blinky Thedumb)
   // shrinks on its own, down to 13px. Re-run whenever a name's box changes size: first layout,
   // window resizes, cards shown or hidden by the filters.
-  const SHARED_MIN = 1.1 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const SHARED_MIN = 1.2 * parseFloat(getComputedStyle(document.documentElement).fontSize);
   const fitsAt = (el, floor) => {
     let size = parseFloat(getComputedStyle(el).fontSize);
     while (el.scrollWidth > el.clientWidth && size - 0.5 >= floor) {
