@@ -15,10 +15,9 @@ const owners = [...new Set(blizzardCharacters.map((c) => c.owner).filter(Boolean
 const fetched = loadModern()?.characters;
 const modern = fetched && sortRoster(fetched.filter((c) => (c.game ?? 'modern') === 'modern'), owners);
 // Failed Forever lookups are hidden rather than shown as error cards: a character only shows up on
-// the API once it has logged in at level 10+, so until then the section just lists who's coming.
+// the API once it has logged in at level 10+, so until then the section shows a one-line note.
 const forever = sortRoster((fetched ?? []).filter((c) => c.game === 'forever' && !c.error), owners);
 const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
-const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,]*)$/, ' and $1');
 ---
 <Base title="Our Characters" description="Live World of Warcraft character profiles for Pat, Mimi and friends on Modern, Forever and the Aethernal server.">
   <h1>Our Characters</h1>
@@ -45,7 +44,7 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
           {forever.map((c: any) => <ModernCharacter c={c} />)}
         </div>
       ) : (
-        <p class="panel empty muted">{foreverNames} show up here once their Forever profiles are on Battle.net.</p>
+        <p class="panel empty muted">Forever profiles appear here once they're on Battle.net.</p>
       )}
     </section>
   )}
@@ -234,7 +233,7 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
   #aethernal :global(.body) { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
   #aethernal :global(.body > footer) { margin-top: auto; }
   #aethernal :global(header) { display: flex; gap: 14px; align-items: center; }
-  #aethernal :global(.char:has(.tags) header) { padding-right: 72px; }
+  #aethernal :global(.char:has(.tags) :is(.cname, .sub:not(.muted))) { margin-right: 72px; }
   #aethernal :global(.portrait) { position: relative; flex-shrink: 0; width: 56px; height: 56px; }
   #aethernal :global(.class-icon) { width: 56px; height: 56px; border-radius: 8px; border: 2px solid var(--class); }
   #aethernal :global(.race-icon) {
@@ -245,8 +244,6 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
   #aethernal :global(.cname) { margin: 0; font-size: 1.35rem; color: var(--class); display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; }
   #aethernal :global(.cname .dot) { flex-shrink: 0; }
   #aethernal :global(.sub) { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* The guild line wraps rather than cutting the guild name off. */
-  #aethernal :global(.sub.muted) { white-space: normal; overflow-wrap: anywhere; }
   #aethernal :global(.cname a), #aethernal :global(.sub a) { color: inherit; text-decoration: none; }
   #aethernal :global(.cname a:hover), #aethernal :global(.sub a:hover) { text-decoration: underline; text-underline-offset: 3px; }
   #aethernal :global(.cls) { display: block; color: var(--class); font-weight: 600; }

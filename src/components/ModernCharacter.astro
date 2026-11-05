@@ -59,7 +59,7 @@ const mplus = atCap ? c.mythicPlus : null;
           <div class="sub">
             Level {c.level} <span title={c.race}>{raceLabel(c.race)}</span> <span class="cls">{c.spec ? `${c.spec} ` : ''}{c.className}</span>
           </div>
-          <div class="sub muted">{where}{c.guild && <> · <span class="guild">&lt;{c.guild}&gt;</span></>}</div>
+          <div class="sub muted">{where}{c.guild && <> · &lt;{c.guild}&gt;</>}</div>
         </div>
       </header>
 
@@ -179,8 +179,9 @@ const mplus = atCap ? c.mythicPlus : null;
   }
   .body { position: relative; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
   header { display: flex; gap: 14px; align-items: center; }
-  /* Leave room for the owner/HC tags in the top-right corner so long names wrap instead of running under them. */
-  .char:has(.tags) header { padding-right: 72px; }
+  /* Leave room for the owner/HC tags in the top-right corner beside the lines they sit next to (the name
+     and race/class); the realm/guild line below them gets the card's full width. */
+  .char:has(.tags) :is(.cname, .sub:not(.muted)) { margin-right: 72px; }
   .avatar { border-radius: 8px; border: 2px solid var(--class); flex-shrink: 0; }
   .portrait { position: relative; flex-shrink: 0; width: 56px; height: 56px; }
   .class-icon { display: block; width: 56px; height: 56px; border-radius: 8px; border: 2px solid var(--class); }
@@ -189,13 +190,10 @@ const mplus = atCap ? c.mythicPlus : null;
     border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--border);
   }
   /* Every line of the name block stays on one line: long names shrink to fit (see fitAll in wow.astro),
-     and the race/class line cuts off with an ellipsis as a last resort. */
+     and the other lines cut off with an ellipsis as a last resort. */
   .ident { flex: 1; min-width: 0; }
   .cname { margin: 0; font-size: 1.35rem; color: var(--class, var(--text)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* The realm/guild line wraps instead, moving the guild whole onto its own line when it doesn't fit. */
-  .sub.muted { white-space: normal; }
-  .guild { white-space: nowrap; }
   .cls { display: block; color: var(--class); font-weight: 600; }
   .stats { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0; }
   .stats dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
