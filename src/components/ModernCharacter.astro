@@ -179,6 +179,8 @@ const mplus = atCap ? c.mythicPlus : null;
   }
   .body { position: relative; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
   header { display: flex; gap: 14px; align-items: center; }
+  /* Leave room for the owner/HC tags in the top-right corner so long names wrap instead of running under them. */
+  .char:has(.tags) header { padding-right: 72px; }
   .avatar { border-radius: 8px; border: 2px solid var(--class); flex-shrink: 0; }
   .portrait { position: relative; flex-shrink: 0; width: 56px; height: 56px; }
   .class-icon { display: block; width: 56px; height: 56px; border-radius: 8px; border: 2px solid var(--class); }
