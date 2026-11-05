@@ -16,12 +16,18 @@ export const CLASS_COLORS: Record<string, string> = {
   'Evoker': '#33937f',
 };
 
-// Character card order everywhere on the WoW page: highest level first, then by owner in the
-// order of the filter buttons (owners missing from the list go last), then by name.
+// Owners whose characters always list first on the WoW page, ahead of everyone else's.
+export const PRIORITY_OWNERS = ['Pat', 'Mimi'];
+
+// Character card order everywhere on the WoW page: Pat & Mimi's characters first, then everyone
+// else's; within each group highest level first, then by owner in the order of the filter buttons
+// (owners missing from the list go last), then by name.
 export function sortRoster<T extends { level?: number | null; owner?: string | null; name: string }>(chars: T[], owners: string[]): T[] {
+  const tier = (o?: string | null) => (o && PRIORITY_OWNERS.includes(o) ? 0 : 1);
   const rank = (o?: string | null) => (o && owners.includes(o) ? owners.indexOf(o) : owners.length);
   return [...chars].sort((a, b) =>
-    ((b.level ?? 0) - (a.level ?? 0)) || (rank(a.owner) - rank(b.owner)) || a.name.localeCompare(b.name));
+    (tier(a.owner) - tier(b.owner)) || ((b.level ?? 0) - (a.level ?? 0))
+    || (rank(a.owner) - rank(b.owner)) || a.name.localeCompare(b.name));
 }
 
 export const classColor = (name: string) => CLASS_COLORS[name] ?? 'var(--text)';

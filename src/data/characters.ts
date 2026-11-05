@@ -30,6 +30,9 @@ export const blizzardCharacters: BlizzardCharacter[] = [
   { name: 'Chakraa Arcana', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'PVE' },
   { name: 'Monsieur Fish', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'PVE' },
   { name: 'Madame Chips', region: 'us', namespace: 'profile-forever-us', owner: 'Mimi', game: 'forever', ruleset: 'PVE' },
+  { name: 'Zaphyel Highwind', region: 'us', namespace: 'profile-forever-us', owner: 'Mathew', game: 'forever', ruleset: 'PVP' },
+  { name: 'Blinky Thedumb', region: 'us', namespace: 'profile-forever-us', owner: 'Blinky', game: 'forever', ruleset: 'PVP' },
+  { name: 'Selven Ski', region: 'us', namespace: 'profile-forever-us', owner: 'Will', game: 'forever', ruleset: 'PVP' },
 ];
 
 // Aethernal characters are fetched live in the browser from the account panel's public API.
