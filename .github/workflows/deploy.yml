@@ -3,9 +3,10 @@ name: Deploy
 on:
   push:
     branches: [main]
-  # Hourly refresh so modern character data and deck art stay current.
+  # Refresh every 15 minutes so character data and deck art stay current. GitHub often skips
+  # scheduled runs when it's busy, so the off-the-hour minutes give each slot a better chance.
   schedule:
-    - cron: '17 * * * *'
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -40,7 +41,7 @@ jobs:
           path: dist
 
   # GitHub turns scheduled workflows off after 60 days without a commit. Re-enabling this workflow
-  # from its own scheduled run resets that countdown, so the hourly refresh never stops.
+  # from its own scheduled run resets that countdown, so the scheduled refresh never stops.
   keepalive:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
