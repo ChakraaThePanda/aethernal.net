@@ -17,6 +17,7 @@ export interface BlizzardCharacter {
   game?: BlizzardGame;
   // Forever has no servers, just region-wide rulesets, shown on the card in place of the realm.
   // The fetched profile carries the real ruleset; this is only the fallback label.
+  // Shown as PVE, PVP, RP-PVE, RP-PVP or Hardcore (see rulesetLabel in src/lib/wow.ts).
   ruleset?: string;
 }
 
@@ -26,9 +27,9 @@ export const blizzardCharacters: BlizzardCharacter[] = [
   { name: 'connard', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
   // WoW Forever: first + last names, no realms. The API looks characters up by region and a
   // hyphenated slug of the full name: /profile/wow/character/monsieur-fish?namespace=profile-forever-us
-  { name: 'Chakraa Arcana', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'Normal' },
-  { name: 'Monsieur Fish', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'Normal' },
-  { name: 'Madame Chips', region: 'us', namespace: 'profile-forever-us', owner: 'Mimi', game: 'forever', ruleset: 'Normal' },
+  { name: 'Chakraa Arcana', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'PVE' },
+  { name: 'Monsieur Fish', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'PVE' },
+  { name: 'Madame Chips', region: 'us', namespace: 'profile-forever-us', owner: 'Mimi', game: 'forever', ruleset: 'PVE' },
 ];
 
 // Aethernal characters are fetched live in the browser from the account panel's public API.

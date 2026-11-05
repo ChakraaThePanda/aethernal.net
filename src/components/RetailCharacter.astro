@@ -1,5 +1,5 @@
 ---
-import { classColor, qualityVar, classIconUrl, raceIconUrl } from '../lib/wow';
+import { classColor, qualityVar, classIconUrl, raceIconUrl, rulesetLabel } from '../lib/wow';
 
 interface Props {
   c: any; // one entry from src/data/generated/retail.json
@@ -8,7 +8,8 @@ interface Props {
 const { c } = Astro.props;
 const color = classColor(c.className);
 // Forever characters live on a ruleset rather than a server, so that goes where the realm would.
-const where = c.ruleset ? `${c.ruleset} ruleset` : c.realm;
+const where = rulesetLabel(c.ruleset) ?? c.realm;
+const hardcore = rulesetLabel(c.ruleset) === 'Hardcore';
 const lastSeen = c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA', { dateStyle: 'medium' }) : null;
 
 const DIFF_SHORT: Record<string, string> = { LFR: 'LFR', NORMAL: 'N', HEROIC: 'H', MYTHIC: 'M' };
@@ -34,7 +35,12 @@ const mplus = atCap ? c.mythicPlus : null;
   </article>
 ) : (
   <article class="char panel" style={`--class: ${color}`} data-filter-item data-owner={c.owner}>
-    {c.owner && <div class="tags"><span class="owner" data-owner={c.owner}>{c.owner}</span></div>}
+    {(c.owner || hardcore) && (
+      <div class="tags">
+        {c.owner && <span class="owner" data-owner={c.owner}>{c.owner}</span>}
+        {hardcore && <span class="hardcore" title="Hardcore">HC</span>}
+      </div>
+    )}
     {c.render && <div class="render" style={`background-image: url('${c.render}')`} role="img" aria-label={`${c.name} character render`}></div>}
     <div class="body">
       <header>

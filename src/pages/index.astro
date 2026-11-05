@@ -6,7 +6,7 @@ import { aethernalApi, GAME_LABELS } from '../data/characters';
 import { deckInfo } from '../lib/archidekt';
 import { recentRepos } from '../lib/github';
 import { loadRetail } from '../lib/retail';
-import { classColor, classIconUrl } from '../lib/wow';
+import { classColor, classIconUrl, rulesetLabel } from '../lib/wow';
 
 const PANEL = 'https://wow.aethernal.net';
 
@@ -70,7 +70,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
               <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · {GAME_LABELS[c.game as keyof typeof GAME_LABELS] ?? 'Retail'}</span>
             </span>
             {c.itemLevel && <span class="ilvl" title="Item level">{c.itemLevel}</span>}
-            <span class="tags">{c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}</span>
+            <span class="tags">{rulesetLabel(c.ruleset) === 'Hardcore' && <span class="hardcore" title="Hardcore">HC</span>}{c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}</span>
           </li>
         ))}
       </ul>

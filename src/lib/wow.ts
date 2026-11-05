@@ -38,3 +38,15 @@ const slug = (s: string) => s.toLowerCase().replace(/\s+/g, '');
 export const classIconUrl = (className: string) => `${ICONS}/classicon_${slug(className)}.jpg`;
 export const raceIconUrl = (race: string, gender?: string | null) =>
   `${ICONS}/race_${race === 'Undead' ? 'scourge' : slug(race)}_${gender === 'Female' ? 'female' : 'male'}.jpg`;
+
+// Forever rulesets, shown on the card in place of the realm. The API's ruleset name (or the
+// fallback in characters.ts) is mapped to one of: PVE, PVP, RP-PVE, RP-PVP, Hardcore.
+export function rulesetLabel(ruleset?: string | null): string | null {
+  if (!ruleset) return null;
+  const r = ruleset.toLowerCase();
+  if (r.includes('hardcore')) return 'Hardcore';
+  const rp = /^rp|\brp\b|role.?play/.test(r);
+  const pvp = r.includes('pvp');
+  if (rp) return pvp ? 'RP-PVP' : 'RP-PVE';
+  return pvp ? 'PVP' : 'PVE';
+}
