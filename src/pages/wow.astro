@@ -245,6 +245,8 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
   #aethernal :global(.cname) { margin: 0; font-size: 1.35rem; color: var(--class); display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; }
   #aethernal :global(.cname .dot) { flex-shrink: 0; }
   #aethernal :global(.sub) { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* The guild line wraps rather than cutting the guild name off. */
+  #aethernal :global(.sub.muted) { white-space: normal; overflow-wrap: anywhere; }
   #aethernal :global(.cname a), #aethernal :global(.sub a) { color: inherit; text-decoration: none; }
   #aethernal :global(.cname a:hover), #aethernal :global(.sub a:hover) { text-decoration: underline; text-underline-offset: 3px; }
   #aethernal :global(.cls) { display: block; color: var(--class); font-weight: 600; }
