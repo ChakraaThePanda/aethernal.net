@@ -28,7 +28,9 @@ async function loadCharacterList() {
     for (const [, key, value] of m[1].matchAll(/(\w+):\s*'([^']*)'/g)) obj[key] = value;
     return obj;
   });
-  return entries.filter((c) => c.name && c.realm).map((c) => ({ game: 'retail', ...c }));
+  return entries
+    .map((c) => ({ game: 'retail', ...c }))
+    .filter((c) => c.name && (c.realm || c.game === 'forever'));
 }
 
 async function getToken(region) {
@@ -157,35 +159,52 @@ function buildMythicPlus(keystone, season) {
   };
 }
 
+// Retail characters live at /{realm}/{name}. Forever has no realms: the path is just a slug of
+// the full name, spaces turned into hyphens ('Monsieur Fish' -> 'monsieur-fish').
+const characterSlug = (name) => encodeURIComponent(name.toLowerCase().trim().replace(/\s+/g, '-'));
+
+function armoryUrl(c) {
+  const slug = characterSlug(c.name);
+  return c.game === 'forever'
+    ? `https://worldofwarcraft.blizzard.com/en-${c.region}/forever/${c.region}/armory/character/${slug}`
+    : `https://worldofwarcraft.blizzard.com/en-${c.region}/character/${c.region}/${c.realm}/${slug}`;
+}
+
 async function fetchCharacter(api, c) {
-  const base = `/profile/wow/character/${c.realm}/${encodeURIComponent(c.name.toLowerCase())}`;
+  const base = `/profile/wow/character/${c.realm ? `${c.realm}/` : ''}${characterSlug(c.name)}`;
   const profile = await api(base);
   if (!profile) return { ...c, error: 'Character not found (it may need to log in once, or be level 10+).' };
 
   const settle = (p) => p.catch((err) => (console.warn(`  ${c.name}: ${err.message}`), null));
   const staticNs = (c.namespace || `profile-${c.region}`).replace(/^profile-/, 'static-');
-  const [media, equipment, keystone, raids, tier] = await Promise.all([
+  const [media, equipment, keystone, raids, tier, specs] = await Promise.all([
     settle(api(`${base}/character-media`)),
     settle(api(`${base}/equipment`)),
     settle(api(`${base}/mythic-keystone-profile`)),
     settle(api(`${base}/encounters/raids`)),
     latestRaidTier(api, staticNs),
+    // Forever profiles have no active_spec; the active one is on the specializations endpoint.
+    profile.active_spec ? null : settle(api(`${base}/specializations`)),
   ]);
+  const activeSpec = profile.active_spec?.name
+    ?? specs?.specialization_groups?.find((g) => g.is_active)?.specializations?.[0]?.specialization?.name
+    ?? null;
   // Per-dungeon best runs live on the season endpoint; the newest season is the current one.
   const seasonId = keystone?.seasons?.map((s) => s.id).sort((a, b) => b - a)[0];
   const season = seasonId ? await settle(api(`${base}/mythic-keystone-profile/season/${seasonId}`)) : null;
   const asset = (key) => media?.assets?.find((a) => a.key === key)?.value ?? null;
 
   return {
-    name: profile.name,
+    // Forever splits the name: name is the first name, surname the last.
+    name: [profile.name, profile.surname].filter(Boolean).join(' '),
     owner: c.owner,
     game: c.game || 'retail',
-    realm: profile.realm.name,
-    ruleset: c.ruleset ?? null,
+    realm: profile.realm?.name ?? null,
+    ruleset: profile.ruleset?.name ?? c.ruleset ?? null,
     level: profile.level,
     race: profile.race.name,
     className: profile.character_class.name,
-    spec: profile.active_spec?.name ?? null,
+    spec: activeSpec,
     guild: profile.guild?.name ?? null,
     itemLevel: profile.equipped_item_level ?? profile.average_item_level ?? null,
     lastLogin: profile.last_login_timestamp ?? null,
@@ -201,7 +220,7 @@ async function fetchCharacter(api, c) {
       quality: item.quality.type,
       itemLevel: item.level?.value ?? null,
     })),
-    profileUrl: `https://worldofwarcraft.blizzard.com/en-${c.region}/character/${c.region}/${c.realm}/${encodeURIComponent(c.name.toLowerCase())}`,
+    profileUrl: armoryUrl(c),
   };
 }
 
@@ -212,7 +231,7 @@ for (const c of characters) {
   try {
     tokens[c.region] ??= await getToken(c.region);
     const api = makeApi(tokens[c.region], c.region, c.namespace || `profile-${c.region}`);
-    console.log(`Fetching ${c.name}-${c.realm} (${c.namespace})`);
+    console.log(`Fetching ${c.name}${c.realm ? `-${c.realm}` : ''} (${c.namespace})`);
     results.push(await fetchCharacter(api, c));
   } catch (err) {
     console.warn(`  ${c.name}: ${err.message}`);

@@ -10,12 +10,13 @@ export const GAME_LABELS: Record<BlizzardGame, string> = { retail: 'Retail', for
 
 export interface BlizzardCharacter {
   name: string;
-  realm: string; // realm slug, e.g. 'stormrage'
+  realm?: string; // realm slug, e.g. 'stormrage'; Forever has no realms, so leave it out there
   region: 'us' | 'eu';
   namespace: string;
   owner: string;
   game?: BlizzardGame;
-  // Forever has no servers, just region-wide rulesets; shown on the card in place of the realm.
+  // Forever has no servers, just region-wide rulesets, shown on the card in place of the realm.
+  // The fetched profile carries the real ruleset; this is only the fallback label.
   ruleset?: string;
 }
 
@@ -23,12 +24,11 @@ export const blizzardCharacters: BlizzardCharacter[] = [
   { name: 'chakraa', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
   { name: 'clo', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
   { name: 'connard', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
-  // WoW Forever (launches 2026-11-04): first + last names on region-wide ruleset megaservers.
-  // Blizzard hasn't published the Forever profile namespace, realm slug or how two-part names go
-  // in the URL yet, so namespace and realm are guesses to correct once the API is live.
-  { name: 'Chakraa Arcana', realm: 'normal', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'Normal' },
-  { name: 'Monsieur Fish', realm: 'normal', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'Normal' },
-  { name: 'Madame Chips', realm: 'normal', region: 'us', namespace: 'profile-forever-us', owner: 'Mimi', game: 'forever', ruleset: 'Normal' },
+  // WoW Forever: first + last names, no realms. The API looks characters up by region and a
+  // hyphenated slug of the full name: /profile/wow/character/monsieur-fish?namespace=profile-forever-us
+  { name: 'Chakraa Arcana', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'Normal' },
+  { name: 'Monsieur Fish', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'Normal' },
+  { name: 'Madame Chips', region: 'us', namespace: 'profile-forever-us', owner: 'Mimi', game: 'forever', ruleset: 'Normal' },
 ];
 
 // Aethernal characters are fetched live in the browser from the account panel's public API.

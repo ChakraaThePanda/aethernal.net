@@ -14,8 +14,8 @@ const owners = [...new Set(blizzardCharacters.map((c) => c.owner).filter(Boolean
 // game: 'forever' in characters.ts. The page script sorts the Aethernal cards the same way.
 const fetched = loadRetail()?.characters;
 const retail = fetched && sortRoster(fetched.filter((c) => (c.game ?? 'retail') === 'retail'), owners);
-// Failed Forever lookups are hidden rather than shown as error cards: the Forever API details are
-// still guesses, so until a profile loads the section just lists who's coming.
+// Failed Forever lookups are hidden rather than shown as error cards: a character only shows up on
+// the API once it has logged in at level 10+, so until then the section just lists who's coming.
 const forever = sortRoster((fetched ?? []).filter((c) => c.game === 'forever' && !c.error), owners);
 const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
 const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,]*)$/, ' and $1');
