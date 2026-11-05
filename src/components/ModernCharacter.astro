@@ -179,9 +179,9 @@ const mplus = atCap ? c.mythicPlus : null;
   }
   .body { position: relative; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
   header { display: flex; gap: 14px; align-items: center; }
-  /* Leave room for the owner/HC tags in the top-right corner beside the lines they sit next to (the name
-     and race/class); the realm/guild line below them gets the card's full width. */
-  .char:has(.tags) :is(.cname, .sub:not(.muted)) { margin-right: 72px; }
+  /* Leave room for the owner/HC tags in the top-right corner beside the name, the only line that reaches
+     them (the level/race text after it is short); every line below gets the card's full width. */
+  .char:has(.tags) .cname { margin-right: 72px; }
   .avatar { border-radius: 8px; border: 2px solid var(--class); flex-shrink: 0; }
   .portrait { position: relative; flex-shrink: 0; width: 56px; height: 56px; }
   .class-icon { display: block; width: 56px; height: 56px; border-radius: 8px; border: 2px solid var(--class); }

@@ -233,7 +233,7 @@ const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
   #aethernal :global(.body) { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
   #aethernal :global(.body > footer) { margin-top: auto; }
   #aethernal :global(header) { display: flex; gap: 14px; align-items: center; }
-  #aethernal :global(.char:has(.tags) :is(.cname, .sub:not(.muted))) { margin-right: 72px; }
+  #aethernal :global(.char:has(.tags) .cname) { margin-right: 72px; }
   #aethernal :global(.portrait) { position: relative; flex-shrink: 0; width: 56px; height: 56px; }
   #aethernal :global(.class-icon) { width: 56px; height: 56px; border-radius: 8px; border: 2px solid var(--class); }
   #aethernal :global(.race-icon) {
