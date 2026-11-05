@@ -69,12 +69,14 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
   // Aethernal: fetched live from the account panel's public API.
   const root = document.getElementById('aethernal');
   const statusEl = document.getElementById('realm-status');
-  // Character names stay on one line, all at the same size: the size that fits the longest name
-  // on the page (from 1.35rem down to 13px). Re-run whenever a name's box changes size: first
-  // layout, window resizes, cards shown or hidden by the filters.
-  const fitsAt = (el) => {
+  // Character names stay on one line. They share one size, the one that fits the longest name
+  // (from 1.35rem), but that shared size doesn't go below 1.1rem; a name too long even for that
+  // shrinks on its own, down to 13px. Re-run whenever a name's box changes size: first layout,
+  // window resizes, cards shown or hidden by the filters.
+  const SHARED_MIN = 1.1 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const fitsAt = (el, floor) => {
     let size = parseFloat(getComputedStyle(el).fontSize);
-    while (el.scrollWidth > el.clientWidth && size - 0.5 >= 13) {
+    while (el.scrollWidth > el.clientWidth && size - 0.5 >= floor) {
       size -= 0.5;
       el.style.fontSize = `${size}px`;
     }
@@ -84,10 +86,11 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
     const names = [...document.querySelectorAll('.char .cname')];
     names.forEach((el) => { el.style.fontSize = ''; });
     // Hidden names (filtered out) have no width to measure; they're fitted when they show again.
-    const sizes = names.filter((el) => el.clientWidth).map(fitsAt);
-    if (!sizes.length) return;
-    const size = `${Math.min(...sizes)}px`;
-    names.forEach((el) => { el.style.fontSize = size; });
+    const visible = names.filter((el) => el.clientWidth);
+    if (!visible.length) return;
+    const shared = `${Math.min(...visible.map((el) => fitsAt(el, SHARED_MIN)))}px`;
+    names.forEach((el) => { el.style.fontSize = shared; });
+    visible.forEach((el) => fitsAt(el, 13));
   };
   let fitQueued = false;
   const nameObserver = new ResizeObserver(() => {
