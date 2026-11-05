@@ -64,7 +64,7 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
 </Base>
 
 <script>
-  import { CLASS_COLORS, sortRoster, classIconUrl, raceIconUrl } from '../lib/wow';
+  import { CLASS_COLORS, sortRoster, classIconUrl, raceIconUrl, sortEquipment } from '../lib/wow';
 
   // Aethernal: fetched live from the account panel's public API.
   const root = document.getElementById('aethernal');
@@ -90,10 +90,13 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
   function card(c) {
     const owner = c.owner;
     const color = CLASS_COLORS[c.className] || 'var(--text)';
-    const gear = (c.equipment || [])
+    const gear = sortEquipment(c.equipment || [])
       .map((i) => `<li><span class="slot">${esc(i.slot)}</span>`
         + `<a href="https://www.wowhead.com/wotlk/item=${i.entry}" target="_blank" rel="noopener" style="color: var(--q${Number(i.quality) || 0})">${esc(i.name)}</a>`
         + `<span class="ilvl">${i.itemLevel ?? ''}</span></li>`)
+      .join('');
+    const professions = (c.professions || [])
+      .map((p) => `<tr><td>${esc(p.name)}</td><td class="skill">${p.skill}${p.max ? `<span class="muted"> / ${p.max}</span>` : ''}</td></tr>`)
       .join('');
     return `
       <article class="char panel" style="--class: ${color}" data-filter-item data-owner="${esc(owner || '')}">
@@ -118,6 +121,7 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
             ${c.honorableKills ? `<div><dt>Honor kills</dt><dd>${c.honorableKills}</dd></div>` : ''}
           </dl>
           ${gear ? `<details class="acc"><summary><span>Equipment</span></summary><ul class="gear">${gear}</ul></details>` : ''}
+          ${professions ? `<details class="acc"><summary><span>Professions</span></summary><table class="profs"><tbody>${professions}</tbody></table></details>` : ''}
           <footer class="small muted">${c.online ? 'Online now' : c.lastSeen ? `Last seen ${new Date(c.lastSeen).toLocaleDateString('en-CA', { dateStyle: 'medium' })}` : ''}</footer>
         </div>
       </article>`;

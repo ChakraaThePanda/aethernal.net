@@ -50,3 +50,19 @@ export function rulesetLabel(ruleset?: string | null): string | null {
   if (rp) return pvp ? 'RP-PVP' : 'RP-PVE';
   return pvp ? 'PVP' : 'PVE';
 }
+
+// Equipment in character-window order: the left column, the right column, then weapons. Battle.net
+// and AzerothCore name some slots differently ('Shoulders'/'Shoulder', 'Ring 1'/'Finger'), so the
+// name is normalized first. Both list rings and trinkets in order, and the sort is stable.
+const PANE_ORDER = [
+  'head', 'neck', 'shoulder', 'back', 'chest', 'shirt', 'tabard', 'wrist',
+  'hands', 'waist', 'legs', 'feet', 'finger', 'trinket',
+  'main hand', 'off hand', 'ranged',
+];
+const paneIndex = (slot: string) => {
+  const s = slot.toLowerCase().replace(/\s*\d+$/, '').replace(/^shoulders$/, 'shoulder').replace(/^ring$/, 'finger');
+  const i = PANE_ORDER.indexOf(s);
+  return i < 0 ? PANE_ORDER.length : i;
+};
+export const sortEquipment = <T extends { slot: string }>(items: T[]): T[] =>
+  [...items].sort((a, b) => paneIndex(a.slot) - paneIndex(b.slot));

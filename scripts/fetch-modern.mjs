@@ -164,6 +164,30 @@ function currentKeystoneSeason(api, dynamicNs) {
   return seasonCache.get(dynamicNs);
 }
 
+// Primary professions, then secondary ones (Cooking, Fishing, ...). Modern splits each profession
+// into one skill line per expansion, so it shows the newest tier the character has; Classic-style
+// profiles (Forever) put the skill on the profession itself.
+function buildProfessions(data) {
+  const entry = (p, secondary) => {
+    const tier = [...(p.tiers ?? [])].sort((a, b) => (b.tier?.id ?? 0) - (a.tier?.id ?? 0))[0];
+    const skill = tier?.skill_points ?? p.skill_points;
+    if (skill == null) return null;
+    return {
+      name: p.profession.name,
+      tier: tier?.tier?.name ?? null,
+      skill,
+      max: tier?.max_skill_points ?? p.max_skill_points ?? null,
+      secondary,
+    };
+  };
+  const byName = (a, b) => a.name.localeCompare(b.name);
+  const list = [
+    ...(data?.primaries ?? []).map((p) => entry(p, false)).filter(Boolean).sort(byName),
+    ...(data?.secondaries ?? []).map((p) => entry(p, true)).filter(Boolean).sort(byName),
+  ];
+  return list.length ? list : null;
+}
+
 function buildMythicPlus(keystone, season, current) {
   const rotation = current?.dungeons ?? [];
   if (!keystone?.current_mythic_rating && !rotation.length) return null;
@@ -216,7 +240,7 @@ async function fetchCharacter(api, c) {
   const settle = (p) => p.catch((err) => (console.warn(`  ${c.name}: ${err.message}`), null));
   const staticNs = (c.namespace || `profile-${c.region}`).replace(/^profile-/, 'static-');
   const dynamicNs = staticNs.replace(/^static-/, 'dynamic-');
-  const [media, equipment, keystone, raids, tier, specs, currentSeason] = await Promise.all([
+  const [media, equipment, keystone, raids, tier, specs, currentSeason, professions] = await Promise.all([
     settle(api(`${base}/character-media`)),
     settle(api(`${base}/equipment`)),
     settle(api(`${base}/mythic-keystone-profile`)),
@@ -225,6 +249,7 @@ async function fetchCharacter(api, c) {
     // Forever profiles have no active_spec; the active one is on the specializations endpoint.
     profile.active_spec ? null : settle(api(`${base}/specializations`)),
     currentKeystoneSeason(api, dynamicNs),
+    settle(api(`${base}/professions`)),
   ]);
   const activeSpec = profile.active_spec?.name
     ?? specs?.specialization_groups?.find((g) => g.is_active)?.specializations?.[0]?.specialization?.name
@@ -262,6 +287,7 @@ async function fetchCharacter(api, c) {
       quality: item.quality.type,
       itemLevel: item.level?.value ?? null,
     })),
+    professions: buildProfessions(professions),
     profileUrl: armoryUrl(c),
   };
 }

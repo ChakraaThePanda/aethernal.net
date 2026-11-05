@@ -1,5 +1,5 @@
 ---
-import { classColor, qualityVar, classIconUrl, raceIconUrl, rulesetLabel } from '../lib/wow';
+import { classColor, qualityVar, classIconUrl, raceIconUrl, rulesetLabel, sortEquipment } from '../lib/wow';
 
 interface Props {
   c: any; // one entry from src/data/generated/modern.json
@@ -73,7 +73,7 @@ const mplus = atCap ? c.mythicPlus : null;
           <details class="acc">
             <summary><span>Equipment</span></summary>
             <ul class="gear">
-              {c.equipment.filter((i: any) => i.slot !== 'Shirt' && i.slot !== 'Tabard').map((i: any) => (
+              {sortEquipment(c.equipment).map((i: any) => (
                 <li>
                   <span class="slot">{i.slot}</span>
                   <a href={`https://www.wowhead.com/item=${i.id}`} target="_blank" rel="noopener" style={`color: ${qualityVar(i.quality)}`}>{i.name}</a>
@@ -81,6 +81,22 @@ const mplus = atCap ? c.mythicPlus : null;
                 </li>
               ))}
             </ul>
+          </details>
+        )}
+
+        {c.professions?.length > 0 && (
+          <details class="acc">
+            <summary><span>Professions</span></summary>
+            <table class="profs">
+              <tbody>
+                {c.professions.map((p: any) => (
+                  <tr>
+                    <td title={p.tier ?? undefined}>{p.name}</td>
+                    <td class="skill">{p.skill}{p.max ? <span class="muted"> / {p.max}</span> : ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </details>
         )}
 

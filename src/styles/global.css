@@ -125,6 +125,12 @@ details.acc > summary > span:first-child { flex: 1; }
 .acc .gear li { display: grid; grid-template-columns: 90px 1fr auto; gap: 8px; padding: 4px 12px; }
 .acc .gear a { text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .acc .gear .slot, .acc .gear .ilvl { color: var(--muted); }
+.acc .profs { width: 100%; border-collapse: collapse; font-size: 0.85rem; border-top: 1px solid var(--border); }
+.acc .profs td { padding: 4px 12px; }
+.acc .profs tr:first-child td { padding-top: 8px; }
+.acc .profs tr:last-child td { padding-bottom: 8px; }
+.acc .profs .skill { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
+.acc .profs .skill .muted { font-weight: normal; }
 
 /* Hardcore characters (Aethernal, and Forever's Hardcore ruleset) on the home roster and /wow cards. */
 .hardcore {
