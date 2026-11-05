@@ -20,8 +20,8 @@ const forever = sortRoster((fetched ?? []).filter((c) => c.game === 'forever' &&
 const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
 const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,]*)$/, ' and $1');
 ---
-<Base title="Pat & Mimi's Characters" description="Pat and Mimi's live World of Warcraft character profiles on Modern, Forever and the Aethernal server.">
-  <h1>Pat &amp; Mimi's Characters</h1>
+<Base title="Our Characters" description="Live World of Warcraft character profiles for Pat, Mimi and friends on Modern, Forever and the Aethernal server.">
+  <h1>Our Characters</h1>
   <p class="lead">Our characters on Modern, Forever and Aethernal.</p>
 
   <OwnerFilter owners={owners} />
