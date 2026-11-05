@@ -69,6 +69,25 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
   // Aethernal: fetched live from the account panel's public API.
   const root = document.getElementById('aethernal');
   const statusEl = document.getElementById('realm-status');
+  // Character names stay on one line: any that don't fit shrink until they do (down to 13px).
+  // Re-run whenever a name's box changes size: first layout, window resizes, cards shown by the filters.
+  const fitName = (el) => {
+    if (!el.clientWidth) return; // Hidden by a filter; fitted when it shows again.
+    el.style.fontSize = '';
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > el.clientWidth && size > 13) {
+      size -= 0.5;
+      el.style.fontSize = `${size}px`;
+    }
+  };
+  const nameObserver = new ResizeObserver((entries) => entries.forEach((e) => fitName(e.target)));
+  const fitNames = () => {
+    nameObserver.disconnect();
+    document.querySelectorAll('.char .cname').forEach((el) => nameObserver.observe(el));
+  };
+  fitNames();
+  document.fonts?.ready.then(() => document.querySelectorAll('.char .cname').forEach(fitName));
+
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
   // AzerothCore has no character renders, so the portrait is Wowhead's class icon with a small
   // race/gender icon in the corner.
@@ -107,7 +126,7 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
               <img class="class-icon" src="${classIcon(c)}" alt="${esc(c.className)}" width="56" height="56" loading="lazy">
               <img class="race-icon" src="${raceIcon(c)}" alt="${esc(`${c.gender} ${c.race}`)}" width="24" height="24" loading="lazy">
             </div>
-            <div>
+            <div class="ident">
               <h3 class="cname">${armoryLink('character', c.name, esc(c.name))}
                 <span class="dot ${c.online ? 'on' : ''}" title="${c.online ? 'Online' : 'Offline'}"></span>
               </h3>
@@ -143,6 +162,7 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
         ? chars.map(card).join('')
         : '<p class="panel empty muted">No characters to show yet.</p>';
       window.applyOwnerFilter?.();
+      fitNames();
       window.$WowheadPower?.refreshLinks();
     } catch {
       statusEl.hidden = false;
@@ -194,8 +214,10 @@ const foreverNames = foreverListed.map((c) => c.name).join(', ').replace(/, ([^,
     position: absolute; right: -6px; bottom: -6px; width: 24px; height: 24px;
     border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--border);
   }
-  #aethernal :global(.cname) { margin: 0; font-size: 1.35rem; color: var(--class); display: flex; align-items: center; gap: 8px; }
-  #aethernal :global(.sub) { font-size: 0.9rem; }
+  #aethernal :global(.ident) { flex: 1; min-width: 0; }
+  #aethernal :global(.cname) { margin: 0; font-size: 1.35rem; color: var(--class); display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; }
+  #aethernal :global(.cname .dot) { flex-shrink: 0; }
+  #aethernal :global(.sub) { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #aethernal :global(.cname a), #aethernal :global(.sub a) { color: inherit; text-decoration: none; }
   #aethernal :global(.cname a:hover), #aethernal :global(.sub a:hover) { text-decoration: underline; text-underline-offset: 3px; }
   #aethernal :global(.cls) { display: block; color: var(--class); font-weight: 600; }
