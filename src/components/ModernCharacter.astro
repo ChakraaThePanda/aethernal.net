@@ -65,7 +65,7 @@ const mplus = atCap ? c.mythicPlus : null;
 
       <dl class="stats">
         {c.itemLevel && <div><dt>Item level</dt><dd>{c.itemLevel}</dd></div>}
-        {mplus && <div><dt>M+ rating</dt><dd style={mplus.color ? `color: ${mplus.color}` : undefined}>{mplus.value}</dd></div>}
+        {mplus?.value != null && <div><dt>M+ rating</dt><dd style={mplus.color ? `color: ${mplus.color}` : undefined}>{mplus.value}</dd></div>}
       </dl>
 
       <div class="accordions">
@@ -95,8 +95,12 @@ const mplus = atCap ? c.mythicPlus : null;
                   {mplus.runs.map((r: any) => (
                     <tr>
                       <td>{r.dungeon}</td>
-                      <td class={r.timed ? 'key timed' : 'key depleted'} title={r.timed ? 'Timed' : 'Over time'}>+{r.level}</td>
-                      <td class="num" style={r.color ? `color: ${r.color}` : undefined}>{r.rating}</td>
+                      {r.level == null ? (
+                        <td class="key none" title="Not done this season">–</td>
+                      ) : (
+                        <td class={r.timed ? 'key timed' : 'key depleted'} title={r.timed ? 'Timed' : 'Over time'}>+{r.level}</td>
+                      )}
+                      <td class={r.rating == null ? 'num none' : 'num'} style={r.color ? `color: ${r.color}` : undefined}>{r.rating ?? '–'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -182,6 +186,7 @@ const mplus = atCap ? c.mythicPlus : null;
   .key { text-align: right; font-weight: 600; white-space: nowrap; }
   .key.timed { color: var(--accent); }
   .key.depleted { color: var(--muted); }
+  .key.none, .num.none { color: var(--muted); font-weight: normal; }
   .raids td.num { padding-left: 4px; padding-right: 10px; }
   .raids .done { color: var(--ok); font-weight: 600; }
   .raids .none { color: var(--muted); }

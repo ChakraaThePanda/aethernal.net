@@ -144,15 +144,29 @@ function currentKeystoneSeason(api, dynamicNs) {
       const index = await api('/data/wow/mythic-keystone/season/index', dynamicNs);
       const id = index?.current_season?.id;
       if (!id) return null;
-      const season = await api(`/data/wow/mythic-keystone/season/${id}`, dynamicNs);
-      return { id, name: season?.season_name ?? null };
+      // The season itself doesn't list its dungeons, but each connected realm has one current
+      // leaderboard per dungeon in the rotation, so any realm's leaderboard index gives the list.
+      const [season, realms] = await Promise.all([
+        api(`/data/wow/mythic-keystone/season/${id}`, dynamicNs),
+        api('/data/wow/connected-realm/index', dynamicNs).catch(() => null),
+      ]);
+      const realmId = realms?.connected_realms?.[0]?.href?.match(/connected-realm\/(\d+)/)?.[1];
+      const boards = realmId
+        ? await api(`/data/wow/connected-realm/${realmId}/mythic-leaderboard/index`, dynamicNs).catch(() => null)
+        : null;
+      const dungeons = (boards?.current_leaderboards ?? []).map((b) => ({ id: b.id, name: b.name }));
+      // Blizzard names it 'Mythic+ Dungeons (Midnight Season 2)'; the card only wants 'Midnight Season 2'.
+      const raw = season?.season_name ?? '';
+      const name = (raw.match(/\(([^)]+)\)/)?.[1] ?? raw.replace(/^mythic\+?\s*(dungeons)?\s*[:-]?\s*/i, '')).trim() || null;
+      return { id, name, dungeons };
     })().catch((err) => (console.warn(`  keystone season: ${err.message}`), null)));
   }
   return seasonCache.get(dynamicNs);
 }
 
 function buildMythicPlus(keystone, season, current) {
-  if (!keystone?.current_mythic_rating) return null;
+  const rotation = current?.dungeons ?? [];
+  if (!keystone?.current_mythic_rating && !rotation.length) return null;
   // Older seasons listed a Fortified and a Tyrannical run per dungeon; keep the better one.
   const best = new Map();
   for (const run of season?.best_runs ?? []) {
@@ -170,9 +184,16 @@ function buildMythicPlus(keystone, season, current) {
   }
   return {
     season: current?.name ?? null,
-    value: Math.round(keystone.current_mythic_rating.rating),
-    color: rgb(keystone.current_mythic_rating.color),
-    runs: [...best.values()].sort((a, b) => b.rating - a.rating),
+    value: keystone?.current_mythic_rating ? Math.round(keystone.current_mythic_rating.rating) : null,
+    color: rgb(keystone?.current_mythic_rating?.color),
+    // Every dungeon in this season's rotation, best runs first, then the ones not done yet
+    // (level null) by name. Without a rotation, just the dungeons the character has run.
+    runs: [
+      ...[...best.values()].sort((a, b) => b.rating - a.rating),
+      ...rotation.filter((d) => !best.has(d.id))
+        .map((d) => ({ dungeon: d.name, level: null, timed: false, rating: null, color: null }))
+        .sort((a, b) => a.dungeon.localeCompare(b.dungeon)),
+    ],
   };
 }
 
