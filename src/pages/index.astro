@@ -25,7 +25,7 @@ const recentDecks = dated
   .slice(0, 4);
 
 const repos = await recentRepos(4);
-const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', timeZone: 'America/Toronto' });
 ---
 <Base>
   <section class="hero">

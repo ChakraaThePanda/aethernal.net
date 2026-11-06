@@ -167,7 +167,7 @@ const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
           </dl>
           ${gear ? `<details class="acc"><summary><span>Equipment</span></summary><ul class="gear">${gear}</ul></details>` : ''}
           ${professions ? `<details class="acc"><summary><span>Professions</span></summary><table class="profs"><tbody>${professions}</tbody></table></details>` : ''}
-          <footer class="small muted">${c.online ? 'Online now' : c.lastSeen ? `Last seen ${new Date(c.lastSeen).toLocaleDateString('en-CA', { dateStyle: 'medium' })}` : ''}</footer>
+          <footer class="small muted">${c.online ? 'Online now' : c.lastSeen ? `Last seen ${new Date(c.lastSeen).toLocaleDateString('en-CA', { dateStyle: 'medium', timeZone: 'America/Toronto' })}` : ''}</footer>
         </div>
       </article>`;
   }

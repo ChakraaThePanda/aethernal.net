@@ -10,7 +10,7 @@ const color = classColor(c.className);
 // Forever characters live on a ruleset rather than a server, so that goes where the realm would.
 const where = rulesetLabel(c.ruleset) ?? c.realm;
 const hardcore = rulesetLabel(c.ruleset) === 'Hardcore';
-const lastSeen = c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA', { dateStyle: 'medium' }) : null;
+const lastSeen = c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA', { dateStyle: 'medium', timeZone: 'America/Toronto' }) : null;
 
 const DIFF_SHORT: Record<string, string> = { LFR: 'LFR', NORMAL: 'N', HEROIC: 'H', MYTHIC: 'M' };
 // Headline for the collapsed raid bar: the newest raid's hardest difficulty with any kills (none if no kills).
