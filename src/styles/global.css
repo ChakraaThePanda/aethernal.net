@@ -158,7 +158,8 @@ details.acc > summary > span:first-child { flex: 1; }
 [data-owner="Alex"] { --owner: #c41e3a; } /* Death Knight red */
 [data-owner="Blinky"] { --owner: #fff468; } /* Rogue yellow */
 [data-owner="Mathew"] { --owner: #8788ee; } /* Warlock purple */
-[data-owner="Will"] { --owner: #00ff98; }   /* Monk jade */
+[data-owner="Will"] { --owner: #f48cba; }   /* Paladin pink */
+[data-owner="Sam"] { --owner: #00ff98; }    /* Monk jade */
 .char .owner { color: var(--owner, var(--text)); border-color: var(--owner, var(--border)); }
 
 /* Cards set display:grid, which would otherwise override the hidden attribute. */
