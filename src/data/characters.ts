@@ -33,7 +33,6 @@ export const blizzardCharacters: BlizzardCharacter[] = [
   { name: 'Blinky Thedumb', region: 'us', namespace: 'profile-forever-us', owner: 'Blinky', game: 'forever', ruleset: 'PVP' },
   { name: 'Zaphyel Highwind', region: 'us', namespace: 'profile-forever-us', owner: 'Mathew', game: 'forever', ruleset: 'PVP' },
   { name: 'Uchai Ecksdee', region: 'us', namespace: 'profile-forever-us', owner: 'Sam', game: 'forever', ruleset: 'PVE' },
-  { name: 'Selven Ski', region: 'us', namespace: 'profile-forever-us', owner: 'Will', game: 'forever', ruleset: 'PVP' },
   { name: 'Selven Iam', region: 'us', namespace: 'profile-forever-us', owner: 'Will', game: 'forever', ruleset: 'PVP' },
 ];
 
