@@ -10,7 +10,10 @@ const color = classColor(c.className);
 // Forever characters live on a ruleset rather than a server, so that goes where the realm would.
 const where = rulesetLabel(c.ruleset) ?? c.realm;
 const hardcore = rulesetLabel(c.ruleset) === 'Hardcore';
-const lastSeen = c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA', { dateStyle: 'medium', timeZone: 'America/Toronto' }) : null;
+// Item links point at the matching Wowhead database, so the link and its tooltip show the item as it
+// is in that game (Forever items live under /forever/, Modern under the root).
+const wowheadItem = c.game === 'forever' ? 'https://www.wowhead.com/forever/item=' : 'https://www.wowhead.com/item=';
+const lastSeen =c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA', { dateStyle: 'medium', timeZone: 'America/Toronto' }) : null;
 
 const DIFF_SHORT: Record<string, string> = { LFR: 'LFR', NORMAL: 'N', HEROIC: 'H', MYTHIC: 'M' };
 // Headline for the collapsed raid bar: the newest raid's hardest difficulty with any kills (none if no kills).
@@ -76,7 +79,7 @@ const mplus = atCap ? c.mythicPlus : null;
               {sortEquipment(c.equipment).map((i: any) => (
                 <li>
                   <span class="slot">{i.slot}</span>
-                  <a href={`https://www.wowhead.com/item=${i.id}`} target="_blank" rel="noopener" style={`color: ${qualityVar(i.quality)}`}>{i.name}</a>
+                  <a href={`${wowheadItem}${i.id}`} target="_blank" rel="noopener" style={`color: ${qualityVar(i.quality)}`}>{i.name}</a>
                   <span class="ilvl">{i.itemLevel}</span>
                 </li>
               ))}
