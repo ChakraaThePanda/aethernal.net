@@ -69,7 +69,6 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
               <span class="cname">{c.name}</span>
               <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · {GAME_LABELS[c.game as keyof typeof GAME_LABELS] ?? 'Modern'}</span>
             </span>
-            {c.itemLevel && <span class="ilvl" title="Item level">{c.itemLevel}</span>}
             <span class="tags">{rulesetLabel(c.ruleset) === 'Hardcore' && <span class="hardcore" title="Hardcore">HC</span>}{c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}</span>
           </li>
         ))}
@@ -82,7 +81,6 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
             <span class="cname"></span>
             <span class="sub"></span>
           </span>
-          <span class="ilvl" title="Item level"></span>
           <span class="tags">
             <span class="hardcore" title="Hardcore" hidden>HC</span>
             <span class="owner-tag" hidden></span>
@@ -173,7 +171,6 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
         li.style.setProperty('--class', classColor(c.className));
         li.querySelector<HTMLImageElement>('.portrait')!.src = classIconUrl(c.className);
         li.querySelector('.sub')!.textContent = `${c.level} ${c.spec ? `${c.spec} ` : ''}${c.className} · Aethernal`;
-        li.querySelector('.ilvl')!.textContent = c.itemLevel ?? '';
         li.querySelector<HTMLElement>('.hardcore')!.hidden = !c.hardcore;
         li.classList.toggle('online', c.online);
         li.dataset.played = String(c.online ? Date.now() : c.lastSeen ?? 0);
@@ -276,12 +273,11 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
   .who { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
   .cname { font-weight: 700; color: var(--class, var(--text)); display: flex; align-items: center; gap: 6px; }
   .sub { font-size: 0.82rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ilvl { font-weight: 700; font-variant-numeric: tabular-nums; }
   .roster :global(li.online) .cname::after {
     content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px var(--ok);
   }
-  /* The Hardcore (HC) pill, then the owner. Fixed width so item levels line up across rows. */
-  .tags { width: 6.5rem; flex-shrink: 0; display: flex; justify-content: flex-end; align-items: center; gap: 4px; }
+  /* The Hardcore (HC) pill, then the owner. */
+  .tags { flex-shrink: 0; display: flex; justify-content: flex-end; align-items: center; gap: 4px; }
   .owner-tag[hidden] { display: none; }
   .owner-tag {
     font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
