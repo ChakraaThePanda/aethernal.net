@@ -73,7 +73,6 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
   </section>
 
   <section data-filter-group data-section="Aethernal" hidden>
-    <p class="realm-line"><span id="realm-status" class="realm-status" hidden></span></p>
     <div id="aethernal" class="chars" data-api={aethernalApi}>
       <p class="panel empty muted">Contacting the realm…</p>
     </div>
@@ -91,7 +90,6 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
 
   // Aethernal: fetched live from the account panel's public API.
   const root = document.getElementById('aethernal');
-  const statusEl = document.getElementById('realm-status');
   const realmDot = document.getElementById('realm-dot');
   // Character names stay on one line. They share one size, the one that fits the longest name
   // (from 1.35rem), but that shared size doesn't go below 1.2rem; a name too long even for that (like Blinky Thedumb)
@@ -197,7 +195,7 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
       </article>`;
   }
 
-  // The realm's status also shows as a dot on the Aethernal tab, so it's visible from the other tabs.
+  // The realm's status shows as a dot on the Aethernal tab (hover it for the player count).
   const setDot = (online, text) => {
     realmDot.hidden = false;
     realmDot.className = `realm-dot ${online ? 'on' : 'off'}`;
@@ -209,10 +207,7 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
       const res = await fetch(root.dataset.api);
       if (!res.ok) throw new Error(res.status);
       const data = await res.json();
-      statusEl.hidden = false;
-      statusEl.className = `realm-status ${data.realm.online ? 'on' : 'off'}`;
-      statusEl.textContent = data.realm.online ? `Online · ${data.realm.playersOnline} playing` : 'Offline';
-      setDot(data.realm.online, statusEl.textContent);
+      setDot(data.realm.online, data.realm.online ? `Online · ${data.realm.playersOnline} playing` : 'Offline');
       window.addFilterOwners?.(data.characters.map((c) => c.owner));
       // Same order as the Battle.net cards, with the owners in filter-button order.
       const owners = [...document.querySelectorAll('.owner-filter [data-owner]')].map((b) => b.dataset.owner);
@@ -228,9 +223,6 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
       fitNames();
       window.$WowheadPower?.refreshLinks();
     } catch {
-      statusEl.hidden = false;
-      statusEl.className = 'realm-status off';
-      statusEl.textContent = 'Unreachable';
       setDot(false, 'Unreachable');
       root.innerHTML = '<p class="panel empty muted">The Aethernal server is unreachable right now. It may be offline for maintenance.</p>';
     }
@@ -278,14 +270,9 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
   .tab .n:empty { display: none; }
   .realm-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff6b6f; }
   .realm-dot.on { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
-  .realm-line { margin: 0 0 12px; }
-  .realm-line:has(#realm-status[hidden]) { display: none; }
   /* Friends' characters, under Pat & Mimi's, shown with the Friends checkbox. Also injected by script. */
   :global(.friends) { grid-column: 1 / -1; }
   :global(.friends-title) { font-size: 1rem; color: var(--muted); margin: 28px 0 16px; }
-  .realm-status { font-family: var(--font-body); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; padding: 2px 10px; border-radius: 999px; border: 1px solid; }
-  .realm-status.on { color: #86e6a0; border-color: #2a5c38; background: #16281c; }
-  .realm-status.off { color: #ff9a9d; border-color: #5c2a2d; background: #2e1414; }
 
   /* The Aethernal cards are injected by script, so their styles must be global. */
   #aethernal :global(.char) { position: relative; overflow: hidden; border-top: 3px solid var(--class, var(--border)); display: flex; flex-direction: column; }
