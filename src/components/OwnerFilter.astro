@@ -2,82 +2,121 @@
 // "All / Pat / Mimi / ..." buttons. Hides every [data-filter-item] whose data-owner doesn't match,
 // and any [data-filter-group] left with nothing visible. Pages that render items later (like the
 // Aethernal cards) call window.addFilterOwners([...]) for any new owners, then window.applyOwnerFilter().
-// The buttons only show once there are at least two owners.
-// Groups can also carry data-section="X": a [data-section-toggle="X"] button (like a section title)
-// then shows only that group, and clicking it again shows every group. This combines with the owner.
-// The chosen section and owner are kept in the URL hash (e.g. /wow#forever, /mtg#mimi, /wow#forever+pat),
-// so they can be linked to.
+// The buttons only show once there are at least two choices.
+//
+// `core` (optional): the owners who get their own button. Everyone else's items count as friends':
+// they share one "Friends" checkbox, off on load, instead of a button each.
+//
+// Tabs: a [data-section-toggle="X"] button (role="tab") shows only the [data-filter-group data-section="X"]
+// group; the first tab is shown when the URL names none. Its [data-count] child gets the number of
+// cards the filters leave in that section. A section left empty by the filters shows its
+// [data-filter-empty] note instead of disappearing. Groups without data-section (like a Friends
+// block inside a section) just hide once nothing in them is visible.
+//
+// The tab, owner and Friends choices are kept in the URL hash (e.g. /wow#modern, /mtg#mimi,
+// /wow#modern+pat+friends), so they can be linked to. The first tab is left out of the hash.
 interface Props {
   owners: string[];
+  core?: string[];
 }
 
-const { owners } = Astro.props;
+const { owners, core } = Astro.props;
+const buttons = core ? owners.filter((o) => core.includes(o)) : owners;
 ---
-<div class="owner-filter pill-list" role="group" aria-label="Show only" hidden={owners.length < 2}>
+<div class="owner-filter pill-list" role="group" aria-label="Show only" data-core={core ? JSON.stringify(core) : undefined} hidden={buttons.length < 2}>
   <button type="button" class="pill" data-filter="" aria-pressed="true">All</button>
-  {owners.map((o) => <button type="button" class="pill" data-filter={o} data-owner={o} aria-pressed="false">{o}</button>)}
+  {buttons.map((o) => <button type="button" class="pill" data-filter={o} data-owner={o} aria-pressed="false">{o}</button>)}
+  {core && <button type="button" class="pill friends-toggle" data-friends-toggle data-owner="Friends" aria-pressed="false" hidden><span class="box" aria-hidden="true"></span>Friends</button>}
 </div>
 
 <script is:inline>
   (() => {
+    const bar = document.querySelector('.owner-filter');
+    const core = bar.dataset.core ? JSON.parse(bar.dataset.core) : null;
+    const friendsToggle = bar.querySelector('[data-friends-toggle]');
     let active = '';
     let section = '';
+    let friends = false;
     // An owner named in the URL hash before their button exists (the Aethernal owners arrive later).
     let pendingOwner = '';
+
+    const isFriend = (owner) => Boolean(core && owner && !core.includes(owner));
+    const buttons = () => bar.querySelectorAll('button[data-filter]');
+    const tabs = () => [...document.querySelectorAll('[data-section-toggle]')];
+    const defaultSection = () => tabs()[0]?.dataset.sectionToggle ?? '';
+    // Friends' items follow only the Friends checkbox, so "Pat" + Friends shows Pat's and friends' cards.
+    const passes = (item) => (isFriend(item.dataset.owner) ? friends : !(active && item.dataset.owner !== active));
+
     window.applyOwnerFilter = () => {
-      for (const item of document.querySelectorAll('[data-filter-item]')) {
-        item.hidden = Boolean(active) && item.dataset.owner !== active;
+      const items = [...document.querySelectorAll('[data-filter-item]')];
+      for (const item of items) item.hidden = !passes(item);
+      // Inner groups first (no data-section), so a section can tell whether anything is left in it.
+      for (const group of document.querySelectorAll('[data-filter-group]:not([data-section])')) {
+        const inner = group.querySelectorAll('[data-filter-item]');
+        group.hidden = inner.length > 0 && [...inner].every((i) => i.hidden);
       }
-      for (const group of document.querySelectorAll('[data-filter-group]')) {
-        const items = group.querySelectorAll('[data-filter-item]');
-        group.hidden = (Boolean(section) && group.dataset.section !== section)
-          || (items.length > 0 && [...items].every((i) => i.hidden));
+      for (const group of document.querySelectorAll('[data-filter-group][data-section]')) {
+        const inner = [...group.querySelectorAll('[data-filter-item]')];
+        const shown = inner.filter((i) => !i.hidden).length;
+        if (tabs().length) {
+          group.hidden = group.dataset.section !== section;
+          const empty = group.querySelector('[data-filter-empty]');
+          if (empty) empty.hidden = !(inner.length > 0 && shown === 0);
+        } else {
+          group.hidden = inner.length > 0 && shown === 0;
+        }
+        const count = document.querySelector(`[data-section-toggle="${group.dataset.section}"] [data-count]`);
+        if (count) count.textContent = inner.length ? String(shown) : '';
+      }
+      if (friendsToggle) {
+        friendsToggle.hidden = !items.some((i) => isFriend(i.dataset.owner));
+        bar.hidden = buttons().length - 1 + (friendsToggle.hidden ? 0 : 1) < 2;
       }
     };
-    const bar = document.querySelector('.owner-filter');
-    const buttons = () => bar.querySelectorAll('button');
-    const sectionToggles = () => [...document.querySelectorAll('[data-section-toggle]')];
 
     const setSection = (name) => {
-      section = name;
-      for (const t of sectionToggles()) {
-        const on = t.dataset.sectionToggle === section;
-        t.setAttribute('aria-pressed', String(on));
-        t.title = on ? 'Show all sections' : `Show only ${t.dataset.sectionToggle}`;
-      }
+      section = name || defaultSection();
+      for (const t of tabs()) t.setAttribute('aria-selected', String(t.dataset.sectionToggle === section));
     };
     const setOwner = (name) => {
       active = name;
       for (const b of buttons()) b.setAttribute('aria-pressed', String(b.dataset.filter === active));
     };
+    const setFriends = (on) => {
+      friends = on;
+      if (!friendsToggle) return;
+      friendsToggle.setAttribute('aria-pressed', String(on));
+      friendsToggle.querySelector('.box').textContent = on ? '✓' : '';
+    };
 
-    // The chosen section and owner are mirrored in the URL hash, in either order and joined by "+",
-    // so they can be linked to: /wow#forever, /wow#pat, /wow#forever+pat.
+    // The tab, owner and Friends choices are mirrored in the URL hash, in any order and joined by "+".
     const writeHash = () => {
-      const parts = [section, active].filter(Boolean).map((p) => encodeURIComponent(p.toLowerCase()));
+      const parts = [section === defaultSection() ? '' : section, active, friends ? 'friends' : '']
+        .filter(Boolean).map((p) => encodeURIComponent(p.toLowerCase()));
       history.pushState(null, '', parts.length ? `#${parts.join('+')}` : location.pathname + location.search);
     };
     const fromHash = () => {
       const parts = decodeURIComponent(location.hash.slice(1)).toLowerCase().split(/[+&,/]/).filter(Boolean);
-      const sec = sectionToggles().find((t) => parts.includes(t.dataset.sectionToggle.toLowerCase()));
+      const sec = tabs().find((t) => parts.includes(t.dataset.sectionToggle.toLowerCase()));
       const own = [...buttons()].find((b) => b.dataset.filter && parts.includes(b.dataset.filter.toLowerCase()));
-      const secName = sec ? sec.dataset.sectionToggle.toLowerCase() : '';
-      pendingOwner = own ? '' : (parts.find((p) => p !== secName) ?? '');
+      const known = [sec?.dataset.sectionToggle.toLowerCase(), 'friends'];
+      pendingOwner = own ? '' : (parts.find((p) => !known.includes(p)) ?? '');
       setSection(sec ? sec.dataset.sectionToggle : '');
       setOwner(own ? own.dataset.filter : '');
+      setFriends(parts.includes('friends'));
       window.applyOwnerFilter();
     };
 
-    // Delegated, because this script runs before the sections below it are parsed.
+    // Delegated, because this script runs before the tabs and sections below it are parsed.
     document.addEventListener('click', (e) => {
-      const toggle = e.target.closest?.('[data-section-toggle]');
-      if (!toggle) return;
-      setSection(section === toggle.dataset.sectionToggle ? '' : toggle.dataset.sectionToggle);
+      const tab = e.target.closest?.('[data-section-toggle]');
+      if (!tab || tab.dataset.sectionToggle === section) return;
+      setSection(tab.dataset.sectionToggle);
       writeHash();
       window.applyOwnerFilter();
     });
     window.addEventListener('popstate', fromHash);
-    if (location.hash) document.addEventListener('DOMContentLoaded', fromHash);
+    document.addEventListener('DOMContentLoaded', fromHash);
 
     const wire = (btn) => btn.addEventListener('click', () => {
       pendingOwner = '';
@@ -86,24 +125,29 @@ const { owners } = Astro.props;
       window.applyOwnerFilter();
     });
     buttons().forEach(wire);
+    friendsToggle?.addEventListener('click', () => {
+      setFriends(!friends);
+      writeHash();
+      window.applyOwnerFilter();
+    });
 
     window.addFilterOwners = (owners) => {
       const known = new Set([...buttons()].map((b) => b.dataset.filter));
       for (const o of owners) {
-        if (!o || known.has(o)) continue;
+        if (!o || known.has(o) || isFriend(o)) continue;
         known.add(o);
         // Copy the "All" button so the new one keeps this component's scoped styles.
         const btn = buttons()[0].cloneNode(true);
         btn.dataset.filter = btn.dataset.owner = btn.textContent = o;
         btn.setAttribute('aria-pressed', 'false');
-        bar.append(btn);
+        (friendsToggle ? friendsToggle.before(btn) : bar.append(btn));
         wire(btn);
         if (pendingOwner && o.toLowerCase() === pendingOwner) {
           pendingOwner = '';
           setOwner(o);
         }
       }
-      bar.hidden = known.size - 1 < 2;
+      bar.hidden = known.size - 1 + (friendsToggle && !friendsToggle.hidden ? 1 : 0) < 2;
     };
   })();
 </script>
@@ -117,4 +161,13 @@ const { owners } = Astro.props;
     color: var(--owner, var(--accent));
     background: var(--accent-soft);
   }
+  /* Friends is an on/off checkbox rather than one of the owner choices, so it sits apart with a box. */
+  .friends-toggle { display: inline-flex; align-items: center; gap: 6px; margin-left: 10px; position: relative; }
+  .friends-toggle::before { content: ''; position: absolute; left: -10px; top: 15%; bottom: 15%; width: 1px; background: var(--border); }
+  .friends-toggle[hidden] { display: none; }
+  .box {
+    width: 13px; height: 13px; border: 1.5px solid currentColor; border-radius: 3px;
+    display: inline-grid; place-items: center; font-size: 10px; line-height: 1;
+  }
+  .friends-toggle[aria-pressed="false"] .box { color: var(--muted); }
 </style>

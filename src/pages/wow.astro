@@ -3,14 +3,16 @@ import Base from '../layouts/Base.astro';
 import ModernCharacter from '../components/ModernCharacter.astro';
 import OwnerFilter from '../components/OwnerFilter.astro';
 import { aethernalApi, blizzardCharacters } from '../data/characters';
-import { sortRoster } from '../lib/wow';
+import { PRIORITY_OWNERS, sortRoster } from '../lib/wow';
 import { loadModern } from '../lib/modern';
 
-// Everyone who owns a Battle.net character, for the filter buttons. Aethernal owners come from the
-// realm API and are added once it answers.
+// Everyone who owns a Battle.net character, for sorting. Only Pat & Mimi (PRIORITY_OWNERS) get a filter
+// button; everyone else's characters are friends', behind one Friends checkbox that starts off.
+// Aethernal owners come from the realm API and are added once it answers.
 const owners = [...new Set(blizzardCharacters.map((c) => c.owner).filter(Boolean))];
+const isFriend = (c: any) => Boolean(c.owner) && !PRIORITY_OWNERS.includes(c.owner);
 
-// Battle.net characters split by game. The Forever section only shows once a character has
+// Battle.net characters split by game. The Forever tab only shows once a character has
 // game: 'forever' in characters.ts. The page script sorts the Aethernal cards the same way.
 const fetched = loadModern()?.characters;
 const modern = fetched && sortRoster(fetched.filter((c) => (c.game ?? 'modern') === 'modern'), owners);
@@ -18,42 +20,64 @@ const modern = fetched && sortRoster(fetched.filter((c) => (c.game ?? 'modern') 
 // the API once it has logged in at level 10+, so until then the section shows a one-line note.
 const forever = sortRoster((fetched ?? []).filter((c) => c.game === 'forever' && !c.error), owners);
 const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
+// The first tab is the one shown on load (and when the URL names none).
+const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
 ---
 <Base title="Our Characters" description="Live World of Warcraft character profiles for Pat, Mimi and friends on Modern, Forever and the Aethernal server.">
   <h1>Our Characters</h1>
   <p class="lead">Our characters on Modern, Forever and Aethernal.</p>
 
-  <OwnerFilter owners={owners} />
-
-  <section data-filter-group data-section="Modern">
-    <h2 class="section-title"><button type="button" class="section-toggle" data-section-toggle="Modern" aria-pressed="false" title="Show only Modern">Modern</button></h2>
-    {modern ? (
-      <div class="chars">
-        {modern.map((c: any) => <ModernCharacter c={c} />)}
-      </div>
-    ) : (
-      <p class="panel empty muted">Modern profiles appear here after the next deploy fetches them from Battle.net.</p>
-    )}
-  </section>
+  <div class="toolbar">
+    <div class="tabs" role="tablist" aria-label="Game">
+      {foreverListed.length > 0 && <button type="button" role="tab" class="tab" data-section-toggle="Forever" aria-selected={String(firstTab === 'Forever')}>Forever <span class="n" data-count></span></button>}
+      <button type="button" role="tab" class="tab" data-section-toggle="Modern" aria-selected={String(firstTab === 'Modern')}>Modern <span class="n" data-count></span></button>
+      <button type="button" role="tab" class="tab" data-section-toggle="Aethernal" aria-selected="false"><span id="realm-dot" class="realm-dot" hidden></span>Aethernal <span class="n" data-count></span></button>
+    </div>
+    <OwnerFilter owners={owners} core={PRIORITY_OWNERS} />
+  </div>
 
   {foreverListed.length > 0 && (
-    <section data-filter-group data-section="Forever">
-      <h2 class="section-title"><button type="button" class="section-toggle" data-section-toggle="Forever" aria-pressed="false" title="Show only Forever">Forever</button></h2>
+    <section data-filter-group data-section="Forever" hidden={firstTab !== 'Forever'}>
       {forever.length ? (
-        <div class="chars">
-          {forever.map((c: any) => <ModernCharacter c={c} />)}
-        </div>
+        <>
+          <div class="chars">
+            {forever.filter((c: any) => !isFriend(c)).map((c: any) => <ModernCharacter c={c} />)}
+          </div>
+          {forever.some(isFriend) && (
+            <div class="friends" data-filter-group>
+              <h2 class="section-title friends-title">Friends</h2>
+              <div class="chars">
+                {forever.filter(isFriend).map((c: any) => <ModernCharacter c={c} />)}
+              </div>
+            </div>
+          )}
+          <p class="panel empty muted" data-filter-empty hidden>No characters here with these filters.</p>
+        </>
       ) : (
         <p class="panel empty muted">Forever profiles appear here once they're on Battle.net.</p>
       )}
     </section>
   )}
 
-  <section data-filter-group data-section="Aethernal">
-    <h2 class="section-title"><button type="button" class="section-toggle" data-section-toggle="Aethernal" aria-pressed="false" title="Show only Aethernal">Aethernal</button> <span id="realm-status" class="realm-status" hidden></span></h2>
+  <section data-filter-group data-section="Modern" hidden={firstTab !== 'Modern'}>
+    {modern ? (
+      <>
+        <div class="chars">
+          {modern.map((c: any) => <ModernCharacter c={c} />)}
+        </div>
+        <p class="panel empty muted" data-filter-empty hidden>No characters here with these filters.</p>
+      </>
+    ) : (
+      <p class="panel empty muted">Modern profiles appear here after the next deploy fetches them from Battle.net.</p>
+    )}
+  </section>
+
+  <section data-filter-group data-section="Aethernal" hidden>
+    <p class="realm-line"><span id="realm-status" class="realm-status" hidden></span></p>
     <div id="aethernal" class="chars" data-api={aethernalApi}>
       <p class="panel empty muted">Contacting the realm…</p>
     </div>
+    <p class="panel empty muted" data-filter-empty hidden>No characters here with these filters.</p>
   </section>
 
   <script is:inline slot="head">
@@ -63,11 +87,12 @@ const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
 </Base>
 
 <script>
-  import { CLASS_COLORS, sortRoster, classIconUrl, raceIconUrl, raceLabel, sortEquipment } from '../lib/wow';
+  import { CLASS_COLORS, PRIORITY_OWNERS, sortRoster, classIconUrl, raceIconUrl, raceLabel, sortEquipment } from '../lib/wow';
 
   // Aethernal: fetched live from the account panel's public API.
   const root = document.getElementById('aethernal');
   const statusEl = document.getElementById('realm-status');
+  const realmDot = document.getElementById('realm-dot');
   // Character names stay on one line. They share one size, the one that fits the longest name
   // (from 1.35rem), but that shared size doesn't go below 1.2rem; a name too long even for that (like Blinky Thedumb)
   // shrinks on its own, down to 13px. Re-run whenever a name's box changes size: first layout,
@@ -172,6 +197,13 @@ const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
       </article>`;
   }
 
+  // The realm's status also shows as a dot on the Aethernal tab, so it's visible from the other tabs.
+  const setDot = (online, text) => {
+    realmDot.hidden = false;
+    realmDot.className = `realm-dot ${online ? 'on' : 'off'}`;
+    realmDot.title = `Aethernal server: ${text}`;
+  };
+
   async function loadAethernal() {
     try {
       const res = await fetch(root.dataset.api);
@@ -180,12 +212,17 @@ const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
       statusEl.hidden = false;
       statusEl.className = `realm-status ${data.realm.online ? 'on' : 'off'}`;
       statusEl.textContent = data.realm.online ? `Online · ${data.realm.playersOnline} playing` : 'Offline';
+      setDot(data.realm.online, statusEl.textContent);
       window.addFilterOwners?.(data.characters.map((c) => c.owner));
       // Same order as the Battle.net cards, with the owners in filter-button order.
       const owners = [...document.querySelectorAll('.owner-filter [data-owner]')].map((b) => b.dataset.owner);
       const chars = sortRoster(data.characters, owners);
+      // Friends' characters (anyone but Pat & Mimi) go in their own block, like on the Forever tab.
+      const isFriend = (c) => Boolean(c.owner) && !PRIORITY_OWNERS.includes(c.owner);
+      const friends = chars.filter(isFriend);
       root.innerHTML = chars.length
-        ? chars.map(card).join('')
+        ? chars.filter((c) => !isFriend(c)).map(card).join('')
+          + (friends.length ? `<div class="friends" data-filter-group><h2 class="section-title friends-title">Friends</h2><div class="chars">${friends.map(card).join('')}</div></div>` : '')
         : '<p class="panel empty muted">No characters to show yet.</p>';
       window.applyOwnerFilter?.();
       fitNames();
@@ -194,6 +231,7 @@ const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
       statusEl.hidden = false;
       statusEl.className = 'realm-status off';
       statusEl.textContent = 'Unreachable';
+      setDot(false, 'Unreachable');
       root.innerHTML = '<p class="panel empty muted">The Aethernal server is unreachable right now. It may be offline for maintenance.</p>';
     }
   }
@@ -214,16 +252,37 @@ const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
 </script>
 
 <style>
-  .chars { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+  /* Global too, for the Friends grid injected into the Aethernal tab. */
+  .chars, #aethernal :global(.chars) { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
   /* Also injected by script, hence global. */
   :global(.empty) { padding: 18px 20px; margin: 0; grid-column: 1 / -1; }
-  /* Section titles are buttons: clicking one shows only that section, clicking it again shows all. */
-  .section-toggle {
-    font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit;
-    background: none; border: 0; padding: 0; cursor: pointer;
+  /* One toolbar: game tabs on the left, the people filter on the right. */
+  .toolbar {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
+    border-bottom: 1px solid var(--border); margin: 0 0 20px;
   }
-  .section-toggle:hover, .section-toggle[aria-pressed="true"] { color: var(--accent); }
-  .section-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+  .toolbar :global(.owner-filter) { margin: 0 0 8px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tab {
+    font: inherit; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.03em;
+    color: var(--muted); background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
+    padding: 6px 12px 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .tab .n {
+    font-family: var(--font-body); font-size: 0.72rem; font-weight: 600; letter-spacing: 0;
+    color: var(--muted); background: var(--panel-alt); border-radius: 999px; padding: 0 8px;
+  }
+  .tab .n:empty { display: none; }
+  .realm-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff6b6f; }
+  .realm-dot.on { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  .realm-line { margin: 0 0 12px; }
+  .realm-line:has(#realm-status[hidden]) { display: none; }
+  /* Friends' characters, under Pat & Mimi's, shown with the Friends checkbox. Also injected by script. */
+  :global(.friends) { grid-column: 1 / -1; }
+  :global(.friends-title) { font-size: 1rem; color: var(--muted); margin: 28px 0 16px; }
   .realm-status { font-family: var(--font-body); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; padding: 2px 10px; border-radius: 999px; border: 1px solid; }
   .realm-status.on { color: #86e6a0; border-color: #2a5c38; background: #16281c; }
   .realm-status.off { color: #ff9a9d; border-color: #5c2a2d; background: #2e1414; }

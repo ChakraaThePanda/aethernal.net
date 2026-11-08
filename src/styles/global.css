@@ -160,6 +160,7 @@ details.acc > summary > span:first-child { flex: 1; }
 [data-owner="Mathew"] { --owner: #8788ee; } /* Warlock purple */
 [data-owner="Will"] { --owner: #f48cba; }   /* Paladin pink */
 [data-owner="Sam"] { --owner: #00ff98; }    /* Monk jade */
+[data-owner="Friends"] { --owner: var(--accent); } /* The WoW page's Friends checkbox */
 .char .owner { color: var(--owner, var(--text)); border-color: var(--owner, var(--border)); }
 
 /* Cards set display:grid, which would otherwise override the hidden attribute. */
