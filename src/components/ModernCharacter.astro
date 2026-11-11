@@ -63,12 +63,7 @@ const sections = [
         {c.owner && <span class="owner" data-owner={c.owner}>{c.owner}</span>}
         {hardcore && <span class="hardcore" title="Hardcore">HC</span>}
       </div>
-      <span class="where">
-        {where}
-        {c.guild && <> · {c.guildUrl
-          ? <a href={c.guildUrl} target="_blank" rel="noopener" title="Open the guild in the Armory">&lt;{c.guild}&gt;</a>
-          : <>&lt;{c.guild}&gt;</>}</>}
-      </span>
+      <span class="where">{where}</span>
     </div>
 
     <header>
@@ -85,6 +80,9 @@ const sections = [
         <h3 class="cname"><a href={c.profileUrl} target="_blank" rel="noopener" title="Open in the Armory">{c.name}</a></h3>
         <div class="line">Level {c.level} <span title={c.race}>{raceLabel(c.race)}</span></div>
         <div class="line cls">{c.spec ? `${c.spec} ` : ''}{c.className}</div>
+        {c.guild && <div class="line home">{c.guildUrl
+            ? <a href={c.guildUrl} target="_blank" rel="noopener" title="Open the guild in the Armory">&lt;{c.guild}&gt;</a>
+            : <>&lt;{c.guild}&gt;</>}</div>}
         {lastSeen && <div class="line seen">Last seen {lastSeen}</div>}
       </div>
     </header>

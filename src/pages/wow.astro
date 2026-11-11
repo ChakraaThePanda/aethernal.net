@@ -227,7 +227,6 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
         <div class="glow"></div><div class="shade"></div>
         <div class="top">
           <div class="pills">${owner ? `<span class="owner" data-owner="${esc(owner)}">${esc(owner)}</span>` : ''}${c.hardcore ? '<span class="hardcore" title="Hardcore">HC</span>' : ''}</div>
-          ${c.guild ? `<span class="where">${armoryLink('guild', c.guild, `&lt;${esc(c.guild)}&gt;`)}</span>` : ''}
         </div>
         <header>
           <div class="portrait">
@@ -238,6 +237,7 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
             <h3 class="cname">${armoryLink('character', c.name, esc(c.name))}<span class="dot ${c.online ? 'on' : ''}" title="${c.online ? 'Online' : 'Offline'}"></span></h3>
             <div class="line">Level ${c.level} <span title="${esc(c.race)}">${esc(raceLabel(c.race))}</span></div>
             <div class="line cls">${c.spec ? `${esc(c.spec)} ` : ''}${esc(c.className)}</div>
+            ${c.guild ? `<div class="line home">${armoryLink('guild', c.guild, `&lt;${esc(c.guild)}&gt;`)}</div>` : ''}
             ${seen ? `<div class="line seen">${seen}</div>` : ''}
           </div>
         </header>
