@@ -130,7 +130,7 @@ a.card:hover, a.card:focus-visible {
   --fig-h: 270px;   /* every character is scaled to fit this height... */
   --fig-w: 170px;   /* ...and this upper-body width (wide races like Tauren hit this first) */
   --focus: 79%;     /* where the middle of the character stands, across the card */
-  --fig-top: 30px;  /* gap between the card's top and the character's head */
+  --fig-top: 40px;  /* gap between the card's top and the character's head */
   position: relative; overflow: hidden; isolation: isolate;
   display: flex; flex-direction: column;
 }
