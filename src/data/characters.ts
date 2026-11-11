@@ -25,6 +25,7 @@ export const blizzardCharacters: BlizzardCharacter[] = [
   { name: 'chakraa', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
   { name: 'clo', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
   { name: 'connard', realm: 'stormrage', region: 'us', namespace: 'profile-us', owner: 'Pat' },
+  { name: 'sovya', realm: 'wyrmrest-accord', region: 'us', namespace: 'profile-us', owner: 'Mathew' },
   // WoW Forever: first + last names, no realms. The API looks characters up by region and a
   // hyphenated slug of the full name: /profile/wow/character/monsieur-fish?namespace=profile-forever-us
   { name: 'Chakraa Arcana', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'PVE' },

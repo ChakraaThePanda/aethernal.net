@@ -63,8 +63,16 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
     {modern ? (
       <>
         <div class="chars">
-          {modern.map((c: any) => <ModernCharacter c={c} />)}
+          {modern.filter((c: any) => !isFriend(c)).map((c: any) => <ModernCharacter c={c} />)}
         </div>
+        {modern.some(isFriend) && (
+          <div class="friends" data-filter-group>
+            <h2 class="section-title friends-title">Friends</h2>
+            <div class="chars">
+              {modern.filter(isFriend).map((c: any) => <ModernCharacter c={c} />)}
+            </div>
+          </div>
+        )}
         <p class="panel empty muted" data-filter-empty hidden>No characters here with these filters.</p>
       </>
     ) : (
