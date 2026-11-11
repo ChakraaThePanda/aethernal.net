@@ -63,7 +63,12 @@ const sections = [
         {c.owner && <span class="owner" data-owner={c.owner}>{c.owner}</span>}
         {hardcore && <span class="hardcore" title="Hardcore">HC</span>}
       </div>
-      <span class="where">{where}{c.guild && <> · &lt;{c.guild}&gt;</>}</span>
+      <span class="where">
+        {where}
+        {c.guild && <> · {c.guildUrl
+          ? <a href={c.guildUrl} target="_blank" rel="noopener" title="Open the guild in the Armory">&lt;{c.guild}&gt;</a>
+          : <>&lt;{c.guild}&gt;</>}</>}
+      </span>
     </div>
 
     <header>

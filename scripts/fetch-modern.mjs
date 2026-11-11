@@ -233,6 +233,16 @@ function armoryUrl(c) {
     : `https://worldofwarcraft.blizzard.com/en-${c.region}/character/${c.region}/${c.realm}/${slug}`;
 }
 
+// A guild's Armory page. On Modern the guild can live on another realm of a connected group (a
+// Stormrage character in a Frostwolf guild), so the realm comes from the guild, not the character.
+function guildUrl(c, guild) {
+  if (!guild?.name) return null;
+  const slug = characterSlug(guild.name);
+  if (c.game === 'forever') return `https://worldofwarcraft.blizzard.com/en-${c.region}/forever/${c.region}/armory/guild/${slug}`;
+  const realm = guild.realm?.slug ?? c.realm;
+  return realm ? `https://worldofwarcraft.blizzard.com/en-${c.region}/guild/${c.region}/${realm}/${slug}` : null;
+}
+
 async function fetchCharacter(api, c) {
   const base = `/profile/wow/character/${c.realm ? `${c.realm}/` : ''}${characterSlug(c.name)}`;
   const profile = await api(base);
@@ -276,6 +286,7 @@ async function fetchCharacter(api, c) {
     className: profile.character_class.name,
     spec: activeSpec,
     guild: profile.guild?.name ?? null,
+    guildUrl: guildUrl(c, profile.guild),
     itemLevel: profile.equipped_item_level ?? profile.average_item_level ?? null,
     lastLogin: profile.last_login_timestamp ?? null,
     avatar: asset('avatar'),

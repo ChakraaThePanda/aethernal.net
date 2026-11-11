@@ -155,7 +155,9 @@ details.acc > summary > span:first-child { flex: 1; }
   --focus: 79%;     /* where the middle of the character stands, across the card */
   --fig-top: 30px;  /* gap between the card's top and the character's head */
   position: relative; overflow: hidden; isolation: isolate;
+  display: flex; flex-direction: column;
 }
+/* The class colour as a wash across the top of the card, strongest in the top-right corner. */
 .banner .glow {
   position: absolute; inset: 0 0 auto; height: 140px; z-index: -3; pointer-events: none;
   background: radial-gradient(120% 140% at 85% 0%, color-mix(in srgb, var(--class, var(--accent)) 38%, transparent), transparent 65%),
@@ -191,17 +193,18 @@ details.acc > summary > span:first-child { flex: 1; }
   line-height: 1; border-radius: 999px; padding: 4px 9px; white-space: nowrap;
 }
 .banner .owner { color: var(--owner, var(--text)); background: rgba(var(--bg-rgb), 0.75); border: 1px solid var(--owner, var(--border)); }
-.banner header { display: flex; gap: 14px; align-items: center; padding: 26px 16px 0; }
-.banner .portrait { position: relative; flex-shrink: 0; width: 60px; height: 60px; }
+/* Portrait on its own row above the name, so names start at the card's left edge and leave the right half to the character. */
+.banner header { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 16px 0; }
+.banner .portrait { position: relative; flex-shrink: 0; width: 46px; height: 46px; }
 .banner .portrait .main {
-  display: block; width: 60px; height: 60px; border-radius: 8px; border: 2px solid var(--class, var(--border));
+  display: block; width: 46px; height: 46px; border-radius: 7px; border: 2px solid var(--class, var(--border));
   object-fit: cover; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 .banner .race-icon {
   position: absolute; right: -6px; bottom: -6px; width: 24px; height: 24px;
   border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--border);
 }
-.banner .ident { flex: 1; min-width: 0; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9); }
+.banner .ident { align-self: stretch; min-width: 0; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9); }
 /* Names stay on one line; very long ones shrink to fit (see fitAll in wow.astro). */
 .banner .cname {
   margin: 0; font-size: 1.35rem; color: var(--class, var(--text));
@@ -214,7 +217,7 @@ details.acc > summary > span:first-child { flex: 1; }
 .banner .line { font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .banner .line.cls { color: var(--class); font-weight: 600; }
 .banner .line.seen { font-size: 0.76rem; color: var(--muted); }
-.banner .rest { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.banner .rest { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
 .banner .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .banner .chip {
   font-size: 0.78rem; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
@@ -231,12 +234,12 @@ details.acc > summary > span:first-child { flex: 1; }
   background: rgba(var(--bg-rgb), var(--ui-a)); backdrop-filter: blur(3px);
 }
 .banner .sections button:hover { border-color: rgba(var(--accent-rgb), 0.4); }
-.banner .sections button::before { content: '\25B8'; color: var(--accent); margin-right: 6px; transition: transform 0.15s; }
-.banner .sections button[aria-expanded="true"] { border-color: rgba(var(--accent-rgb), 0.5); }
+.banner .sections button::before { content: '\25B8'; color: var(--class, var(--accent)); margin-right: 6px; transition: transform 0.15s; }
+.banner .sections button[aria-expanded="true"] { border-color: color-mix(in srgb, var(--class, var(--accent)) 60%, transparent); }
 .banner .sections button[aria-expanded="true"]::before { transform: rotate(90deg); }
 .banner .sections .val { margin-left: 6px; font-size: 0.74rem; font-weight: 700; color: var(--accent); }
 .banner .drawer {
-  border-radius: 6px; border: 1px solid rgba(var(--accent-rgb), 0.25);
+  border-radius: 6px; border: 1px solid color-mix(in srgb, var(--class, var(--accent)) 35%, transparent);
   background: rgba(var(--bg-rgb), calc(var(--ui-a) + 0.3)); backdrop-filter: blur(6px);
 }
 .banner .drawer-head { display: flex; justify-content: space-between; gap: 8px; padding: 7px 12px 2px; font-size: 0.72rem; color: var(--muted); }
@@ -253,7 +256,7 @@ details.acc > summary > span:first-child { flex: 1; }
 .banner .profs .skill { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; vertical-align: top; }
 .banner .profs .skill .muted { font-weight: normal; }
 .banner .profs .bar { height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.08); margin-top: 3px; overflow: hidden; }
-.banner .profs .bar i { display: block; height: 100%; background: var(--accent); }
+.banner .profs .bar i { display: block; height: 100%; background: var(--class, var(--accent)); }
 .banner .rows { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
 .banner .rows td, .banner .rows th { padding: 4px 10px; }
 .banner .rows tbody tr + tr td { border-top: 1px solid rgba(var(--accent-rgb), 0.08); }
