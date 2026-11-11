@@ -94,7 +94,7 @@ export function figureBox(buf) {
 
 export async function measureRender(url) {
   if (!url?.endsWith('.png')) return null;
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(20_000) }); // a stalled download mustn't hang the deploy
   if (!res.ok) return null;
   return figureBox(Buffer.from(await res.arrayBuffer()));
 }

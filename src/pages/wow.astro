@@ -215,7 +215,7 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
     const seen = c.online ? 'Online now'
       : c.lastSeen ? `Last seen ${new Date(c.lastSeen).toLocaleDateString('en-CA', { dateStyle: 'medium', timeZone: 'America/Toronto' })}` : '';
     return `
-      <article class="char banner panel" style="--class: ${color}" data-filter-item data-owner="${esc(owner || '')}">
+      <article class="char banner panel" style="--class: ${color}" data-filter-item data-owner="${esc(owner || '')}" data-name="${esc(c.name)}">
         <div class="glow"></div><div class="shade"></div>
         <div class="top">
           <div class="pills">${owner ? `<span class="owner" data-owner="${esc(owner)}">${esc(owner)}</span>` : ''}${c.hardcore ? '<span class="hardcore" title="Hardcore">HC</span>' : ''}</div>
@@ -269,10 +269,20 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
       // Friends' characters (anyone but Pat & Mimi) go in their own block, like on the Forever tab.
       const isFriend = (c) => Boolean(c.owner) && !PRIORITY_OWNERS.includes(c.owner);
       const friends = chars.filter(isFriend);
+      // The cards are rebuilt on every refresh; reopen whichever drawers were open.
+      const wasOpen = [...root.querySelectorAll('[data-open][aria-expanded="true"]')]
+        .map((b) => [b.closest('.char').dataset.name, b.dataset.open]);
       root.innerHTML = chars.length
         ? chars.filter((c) => !isFriend(c)).map(card).join('')
           + (friends.length ? `<div class="friends" data-filter-group><h2 class="section-title friends-title">Friends</h2><div class="chars">${friends.map(card).join('')}</div></div>` : '')
         : '<p class="panel empty muted">No characters to show yet.</p>';
+      for (const [name, key] of wasOpen) {
+        const card = [...root.querySelectorAll('.char')].find((el) => el.dataset.name === name);
+        const button = card?.querySelector(`[data-open="${key}"]`);
+        if (!button) continue;
+        button.setAttribute('aria-expanded', 'true');
+        card.querySelector(`[data-drawer="${key}"]`).hidden = false;
+      }
       window.applyOwnerFilter?.();
       fitNames();
       window.$WowheadPower?.refreshLinks();
