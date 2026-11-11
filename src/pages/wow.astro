@@ -113,13 +113,29 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
   };
   const fitAll = () => {
     const names = [...document.querySelectorAll('.char .cname')];
-    names.forEach((el) => { el.style.fontSize = ''; });
+    names.forEach((el) => {
+      el.style.fontSize = '';
+      // Reserve exactly as much room as this card's own tags need (a wide pill like MATHEW needs more
+      // than PAT): the tags sit 12px from the card's edge, the name 20px, plus a 10px gap.
+      const tags = el.closest('.char')?.querySelector('.tags');
+      el.style.marginRight = tags?.offsetWidth ? `${tags.offsetWidth - 8 + 10}px` : '';
+    });
     // Hidden names (filtered out) have no width to measure; they're fitted when they show again.
     const visible = names.filter((el) => el.clientWidth);
     if (!visible.length) return;
     const shared = `${Math.min(...visible.map((el) => fitsAt(el, SHARED_MIN)))}px`;
     names.forEach((el) => { el.style.fontSize = shared; });
     visible.forEach((el) => fitsAt(el, 13));
+    // Center the first tag on the name's text, which sits a little lower once a long name shrinks.
+    visible.forEach((el) => {
+      const card = el.closest('.char');
+      const pill = card?.querySelector('.tags > :first-child');
+      if (!pill) return;
+      range.selectNodeContents(el);
+      const text = range.getBoundingClientRect();
+      const mid = (text.top + text.bottom) / 2 - card.getBoundingClientRect().top - card.clientTop;
+      pill.parentElement.style.top = `${Math.round(mid - pill.offsetHeight / 2)}px`;
+    });
   };
   let fitQueued = false;
   const nameObserver = new ResizeObserver(() => {
