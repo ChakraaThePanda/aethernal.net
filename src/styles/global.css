@@ -233,6 +233,10 @@ details.acc > summary > span:first-child { flex: 1; }
   border-radius: 6px; border: 1px solid rgba(var(--accent-rgb), 0.15);
   background: rgba(var(--bg-rgb), var(--ui-a)); backdrop-filter: blur(3px);
 }
+/* Buttons sit at the bottom of the card, so they line up across a row of cards. While a drawer is open the
+   row grows, so they go back under the chips instead of sliding down with it. */
+.banner .sections { margin-top: auto; }
+.chars:has(.drawer:not([hidden])) .banner .sections { margin-top: 0; }
 /* Odd number of buttons: Gear moves to the bottom and fills the row, instead of leaving a gap. */
 .banner .sections:has(> button:last-child:nth-child(odd)) button[data-open="gear"] { grid-column: 1 / -1; order: 1; }
 .banner .sections button:hover { border-color: rgba(var(--accent-rgb), 0.4); }
