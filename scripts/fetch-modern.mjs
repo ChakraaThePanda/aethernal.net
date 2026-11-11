@@ -8,6 +8,7 @@
 // Node without a TypeScript loader.
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { measureRender } from './render-figure.mjs';
 
 const ROOT = new URL('..', import.meta.url);
 const OUT_DIR = new URL('src/data/generated/', ROOT);
@@ -259,6 +260,8 @@ async function fetchCharacter(api, c) {
   const seasonId = currentSeason?.id ?? keystone?.seasons?.map((s) => s.id).sort((a, b) => b - a)[0];
   const season = seasonId ? await settle(api(`${base}/mythic-keystone-profile/season/${seasonId}`)) : null;
   const asset = (key) => media?.assets?.find((a) => a.key === key)?.value ?? null;
+  const render = asset('main-raw') ?? asset('main');
+  const figure = await settle(measureRender(render));
 
   return {
     // Forever splits the name: name is the first name, surname the last.
@@ -276,7 +279,8 @@ async function fetchCharacter(api, c) {
     itemLevel: profile.equipped_item_level ?? profile.average_item_level ?? null,
     lastLogin: profile.last_login_timestamp ?? null,
     avatar: asset('avatar'),
-    render: asset('main-raw') ?? asset('main'),
+    render,
+    figure, // where the character stands in the render, for the card (see render-figure.mjs)
     maxLevel: tier?.maxLevel ?? null,
     mythicPlus: buildMythicPlus(keystone, season, currentSeason),
     raids: buildRaids(tier, raids),

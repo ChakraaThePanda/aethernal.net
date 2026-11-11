@@ -13,210 +13,176 @@ const hardcore = rulesetLabel(c.ruleset) === 'Hardcore';
 // Item links point at the matching Wowhead database, so the link and its tooltip show the item as it
 // is in that game (Forever items live under /forever/, Modern under the root).
 const wowheadItem = c.game === 'forever' ? 'https://www.wowhead.com/forever/item=' : 'https://www.wowhead.com/item=';
-const lastSeen =c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA', { dateStyle: 'medium', timeZone: 'America/Toronto' }) : null;
+const lastSeen = c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA', { dateStyle: 'medium', timeZone: 'America/Toronto' }) : null;
+
+// Where the character stands in its render (measured during the deploy, see scripts/render-figure.mjs).
+// Typical values stand in when it couldn't be measured, so the render still shows.
+const fig = c.figure ?? { top: 0.21, height: 0.6, bodyW: 0.16, centerX: 0.5, headL: 0.45, headR: 0.55, headB: 0.29 };
 
 const DIFF_SHORT: Record<string, string> = { LFR: 'LFR', NORMAL: 'N', HEROIC: 'H', MYTHIC: 'M' };
-// Headline for the collapsed raid bar: the newest raid's hardest difficulty with any kills (none if no kills).
-const raids = (!c.maxLevel || c.level >= c.maxLevel) ? (c.raids?.raids ?? []) : [];
+// Endgame sections only for characters at the level cap (taken from the journal's newest raids,
+// so it follows new expansions). If the cap couldn't be determined, show them anyway.
+const atCap = !c.maxLevel || c.level >= c.maxLevel;
+const raids = atCap ? (c.raids?.raids ?? []) : [];
+const mplus = atCap ? c.mythicPlus : null;
+// Shown on the Raids button: the newest raid's hardest difficulty with any kills (none if no kills).
 const headline = (() => {
   const raid = raids[0];
   if (!raid) return null;
   const best = [...raid.progress].reverse().find((p: any) => p.killed > 0);
   return best ? `${best.killed}/${best.total} ${DIFF_SHORT[best.difficulty]}` : null;
 })();
-// Endgame sections only for characters at the level cap (taken from the journal's newest raids,
-// so it follows new expansions). If the cap couldn't be determined, show them anyway.
-const atCap = !c.maxLevel || c.level >= c.maxLevel;
-const mplus = atCap ? c.mythicPlus : null;
+
+const sections = [
+  c.equipment?.length > 0 && { key: 'gear', title: 'Gear' },
+  c.professions?.length > 0 && { key: 'profs', title: 'Professions' },
+  mplus && { key: 'mplus', title: 'Mythic+' },
+  raids.length > 0 && { key: 'raids', title: 'Raids', value: headline },
+].filter(Boolean) as { key: string; title: string; value?: string | null }[];
 ---
 {c.error ? (
-  <article class="char panel">
-    <div class="body">
-      <h3 class="cname">{c.name} <span class="muted small">{where}</span></h3>
-      <p class="muted">{c.error}</p>
-    </div>
+  <article class="char banner panel">
+    <div class="top"><span class="where">{where}</span></div>
+    <header><div class="ident"><h3 class="cname">{c.name}</h3><div class="line muted">{c.error}</div></div></header>
   </article>
 ) : (
-  <article class="char panel" style={`--class: ${color}`} data-filter-item data-owner={c.owner}>
-    {(c.owner || hardcore) && (
-      <div class="tags">
+  <article class="char banner panel" style={`--class: ${color}`} data-filter-item data-owner={c.owner}>
+    <div class="glow"></div>
+    {c.render && (
+      <div
+        class="art"
+        style={`background-image: url('${c.render}'); --ft: ${fig.top}; --fh: ${fig.height}; --fw: ${fig.bodyW}; --fx: ${fig.centerX}`}
+        data-head-l={fig.headL} data-head-r={fig.headR} data-head-b={fig.headB}
+        role="img" aria-label={`${c.name} character render`}
+      ></div>
+    )}
+    <div class="shade"></div>
+
+    <div class="top">
+      <div class="pills">
         {c.owner && <span class="owner" data-owner={c.owner}>{c.owner}</span>}
         {hardcore && <span class="hardcore" title="Hardcore">HC</span>}
       </div>
-    )}
-    {c.render && <div class="render" style={`background-image: url('${c.render}')`} role="img" aria-label={`${c.name} character render`}></div>}
-    <div class="body">
-      <header>
-        {c.avatar ? (
-          <img class="avatar" src={c.avatar} alt="" width="56" height="56" loading="lazy" />
-        ) : (
-          // No Blizzard avatar (Forever's media endpoint 404s for now): class icon with a race
-          // badge, like the Aethernal cards.
-          <div class="portrait">
-            <img class="class-icon" src={classIconUrl(c.className)} alt={c.className} width="56" height="56" loading="lazy" />
-            <img class="race-icon" src={raceIconUrl(c.race, c.gender)} alt={`${c.gender ?? ''} ${c.race}`.trim()} width="24" height="24" loading="lazy" />
-          </div>
-        )}
-        <div class="ident">
-          <h3 class="cname">{c.name}</h3>
-          <div class="sub">
-            Level {c.level} <span title={c.race}>{raceLabel(c.race)}</span> <span class="cls">{c.spec ? `${c.spec} ` : ''}{c.className}</span>
-          </div>
-          <div class="sub muted">{where}{c.guild && <> · &lt;{c.guild}&gt;</>}</div>
+      <span class="where">{where}{c.guild && <> · &lt;{c.guild}&gt;</>}</span>
+    </div>
+
+    <header>
+      {c.avatar ? (
+        <div class="portrait"><img class="main" src={c.avatar} alt="" width="60" height="60" loading="lazy" /></div>
+      ) : (
+        // No Blizzard avatar (Forever's media endpoint 404s for some): class icon with a race badge.
+        <div class="portrait">
+          <img class="main" src={classIconUrl(c.className)} alt={c.className} width="60" height="60" loading="lazy" />
+          <img class="race-icon" src={raceIconUrl(c.race, c.gender)} alt={`${c.gender ?? ''} ${c.race}`.trim()} width="24" height="24" loading="lazy" />
         </div>
-      </header>
-
-      <dl class="stats">
-        {c.itemLevel && <div><dt>Item level</dt><dd>{c.itemLevel}</dd></div>}
-        {mplus?.value != null && <div><dt>M+ rating</dt><dd style={mplus.color ? `color: ${mplus.color}` : undefined}>{mplus.value}</dd></div>}
-      </dl>
-
-      <div class="accordions">
-        {c.equipment?.length > 0 && (
-          <details class="acc">
-            <summary><span>Equipment</span></summary>
-            <ul class="gear">
-              {sortEquipment(c.equipment).map((i: any) => (
-                <li>
-                  <span class="slot">{i.slot}</span>
-                  <a href={`${wowheadItem}${i.id}`} target="_blank" rel="noopener" style={`color: ${qualityVar(i.quality)}`}>{i.name}</a>
-                  <span class="ilvl">{i.itemLevel}</span>
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
-
-        {c.professions?.length > 0 && (
-          <details class="acc">
-            <summary><span>Professions</span></summary>
-            <table class="profs">
-              <tbody>
-                {c.professions.map((p: any) => (
-                  <tr>
-                    <td title={p.tier ?? undefined}>{p.name}</td>
-                    <td class="skill">{p.skill}{p.max ? <span class="muted"> / {p.max}</span> : ''}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </details>
-        )}
-
-        {mplus && (
-          <details class="acc">
-            <summary>
-              <span>Mythic+{mplus.season && <span class="muted small"> · {mplus.season}</span>}</span>
-            </summary>
-            {mplus.runs.length ? (
-              <table class="rows">
-                <tbody>
-                  {mplus.runs.map((r: any) => (
-                    <tr>
-                      <td>{r.dungeon}</td>
-                      {r.level == null ? (
-                        <td class="key none" title="Not done this season">–</td>
-                      ) : (
-                        <td class={r.timed ? 'key timed' : 'key depleted'} title={r.timed ? 'Timed' : 'Over time'}>+{r.level}</td>
-                      )}
-                      <td class={r.rating == null ? 'num none' : 'num'} style={r.color ? `color: ${r.color}` : undefined}>{r.rating ?? '–'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <p class="muted small pad">No runs this season yet.</p>
-            )}
-          </details>
-        )}
-
-        {raids.length > 0 && (
-          <details class="acc">
-            <summary>
-              <span>Raids <span class="muted small">· {c.raids.expansion}</span></span>
-              {headline && <span class="sum-value">{headline}</span>}
-            </summary>
-            <table class="rows raids">
-              <thead>
-                <tr>
-                  <th></th>
-                  {raids[0].progress.map((p: any) => <th class="num">{DIFF_SHORT[p.difficulty]}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {raids.map((r: any) => (
-                  <tr>
-                    <td>{r.name}</td>
-                    {r.progress.map((p: any) => (
-                      <td class:list={['num', { done: p.total > 0 && p.killed === p.total, none: p.killed === 0 }]}>{p.killed}/{p.total}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </details>
-        )}
+      )}
+      <div class="ident">
+        <h3 class="cname"><a href={c.profileUrl} target="_blank" rel="noopener" title="Open in the Armory">{c.name}</a></h3>
+        <div class="line">Level {c.level} <span title={c.race}>{raceLabel(c.race)}</span></div>
+        <div class="line cls">{c.spec ? `${c.spec} ` : ''}{c.className}</div>
+        {lastSeen && <div class="line seen">Last seen {lastSeen}</div>}
       </div>
+    </header>
 
-      <footer class="small muted">
-        {lastSeen && <span>Last seen {lastSeen}</span>}
-        <a href={c.profileUrl} target="_blank" rel="noopener">Armory ↗</a>
-      </footer>
+    <div class="rest">
+      {(c.itemLevel || mplus?.value != null) && (
+        <div class="chips">
+          {c.itemLevel && <span class="chip">Item level <b>{c.itemLevel}</b></span>}
+          {mplus?.value != null && <span class="chip">M+ <b style={mplus.color ? `color: ${mplus.color}` : undefined}>{mplus.value}</b></span>}
+        </div>
+      )}
+
+      {sections.length > 0 && (
+        <div class="sections">
+          {sections.map((s) => (
+            <button type="button" data-open={s.key} aria-expanded="false">{s.title}{s.value && <span class="val">{s.value}</span>}</button>
+          ))}
+        </div>
+      )}
+
+      {c.equipment?.length > 0 && (
+        <div class="drawer" data-drawer="gear" hidden>
+          <ul class="gear">
+            {sortEquipment(c.equipment).map((i: any) => (
+              <li>
+                <span class="slot">{i.slot}</span>
+                <a href={`${wowheadItem}${i.id}`} target="_blank" rel="noopener" style={`color: ${qualityVar(i.quality)}`}>{i.name}</a>
+                <span class="ilvl">{i.itemLevel}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {c.professions?.length > 0 && (
+        <div class="drawer" data-drawer="profs" hidden>
+          <table class="profs">
+            <tbody>
+              {c.professions.map((p: any) => (
+                <tr>
+                  <td title={p.tier ?? undefined}>
+                    {p.name}
+                    {p.max ? <div class="bar"><i style={`width: ${Math.min(100, Math.round((100 * p.skill) / p.max))}%`}></i></div> : null}
+                  </td>
+                  <td class="skill">{p.skill}{p.max ? <span class="muted"> / {p.max}</span> : ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {mplus && (
+        <div class="drawer" data-drawer="mplus" hidden>
+          <div class="drawer-head">
+            <span>{mplus.season}</span>
+            {mplus.value != null && <span>Rating <b style={mplus.color ? `color: ${mplus.color}` : undefined}>{mplus.value}</b></span>}
+          </div>
+          {mplus.runs.length ? (
+            <table class="rows">
+              <tbody>
+                {mplus.runs.map((r: any) => (
+                  <tr>
+                    <td>{r.dungeon}</td>
+                    {r.level == null ? (
+                      <td class="key none" title="Not done this season">–</td>
+                    ) : (
+                      <td class={r.timed ? 'key timed' : 'key depleted'} title={r.timed ? 'Timed' : 'Over time'}>+{r.level}</td>
+                    )}
+                    <td class={r.rating == null ? 'num none' : 'num'} style={r.color ? `color: ${r.color}` : undefined}>{r.rating ?? '–'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p class="drawer-empty">No runs this season yet.</p>
+          )}
+        </div>
+      )}
+
+      {raids.length > 0 && (
+        <div class="drawer" data-drawer="raids" hidden>
+          <div class="drawer-head"><span>{c.raids.expansion}</span></div>
+          <table class="rows raids">
+            <thead>
+              <tr>
+                <th></th>
+                {raids[0].progress.map((p: any) => <th class="num">{DIFF_SHORT[p.difficulty]}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {raids.map((r: any) => (
+                <tr>
+                  <td title={r.name}>{r.name}</td>
+                  {r.progress.map((p: any) => (
+                    <td class:list={['num', { done: p.total > 0 && p.killed === p.total, none: p.killed === 0 }]}>{p.killed}/{p.total}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   </article>
 )}
-
-<style>
-  .char {
-    position: relative; overflow: hidden;
-    display: grid; grid-template-columns: minmax(0, 1fr);
-    border-top: 3px solid var(--class, var(--border));
-  }
-  .render {
-    position: absolute; inset: 0 -20% auto 35%; height: 340px;
-    background: center top / cover no-repeat;
-    opacity: 0.35;
-    mask-image: linear-gradient(90deg, transparent, #000 40%), linear-gradient(180deg, #000 60%, transparent);
-    mask-composite: intersect;
-    pointer-events: none;
-  }
-  .body { position: relative; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
-  header { display: flex; gap: 14px; align-items: center; }
-  /* Leave room for the owner/HC tags in the top-right corner beside the name, the only line that reaches
-     them (the level/race text after it is short); every line below gets the card's full width. */
-  .char:has(.tags) .cname { margin-right: 72px; }
-  .avatar { border-radius: 8px; border: 2px solid var(--class); flex-shrink: 0; }
-  .portrait { position: relative; flex-shrink: 0; width: 56px; height: 56px; }
-  .class-icon { display: block; width: 56px; height: 56px; border-radius: 8px; border: 2px solid var(--class); }
-  .race-icon {
-    position: absolute; right: -6px; bottom: -6px; width: 24px; height: 24px;
-    border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--border);
-  }
-  /* Every line of the name block stays on one line: long names shrink to fit (see fitAll in wow.astro),
-     and the other lines cut off with an ellipsis as a last resort. */
-  .ident { flex: 1; min-width: 0; }
-  .cname { margin: 0; font-size: 1.35rem; color: var(--class, var(--text)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sub { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cls { display: block; color: var(--class); font-weight: 600; }
-  .stats { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0; }
-  .stats dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-  .stats dd { margin: 0; font-size: 1.25rem; font-weight: 700; }
-
-  .accordions { display: flex; flex-direction: column; gap: 8px; }
-
-  .rows { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  .rows td, .rows th { padding: 5px 12px; border-top: 1px solid var(--border); }
-  .rows th { color: var(--muted); font-weight: 600; font-size: 0.75rem; }
-  .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .key { text-align: right; font-weight: 600; white-space: nowrap; }
-  .key.timed { color: var(--accent); }
-  .key.depleted { color: var(--muted); }
-  .key.none, .num.none { color: var(--muted); font-weight: normal; }
-  .raids td.num { padding-left: 4px; padding-right: 10px; }
-  .raids .done { color: var(--ok); font-weight: 600; }
-  .raids .none { color: var(--muted); }
-  .pad { padding: 4px 12px 10px; margin: 0; }
-
-  /* Pinned to the bottom so cards in the same row line up even when one has fewer sections. */
-  footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: auto; }
-</style>

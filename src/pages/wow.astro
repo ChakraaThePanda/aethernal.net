@@ -113,30 +113,57 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
   };
   const fitAll = () => {
     const names = [...document.querySelectorAll('.char .cname')];
-    names.forEach((el) => {
-      el.style.fontSize = '';
-      // Reserve exactly as much room as this card's own tags need (a wide pill like MATHEW needs more
-      // than PAT): the tags sit 12px from the card's edge, the name 20px, plus a 10px gap.
-      const tags = el.closest('.char')?.querySelector('.tags');
-      el.style.marginRight = tags?.offsetWidth ? `${tags.offsetWidth - 8 + 10}px` : '';
-    });
+    names.forEach((el) => { el.style.fontSize = ''; });
     // Hidden names (filtered out) have no width to measure; they're fitted when they show again.
     const visible = names.filter((el) => el.clientWidth);
     if (!visible.length) return;
     const shared = `${Math.min(...visible.map((el) => fitsAt(el, SHARED_MIN)))}px`;
     names.forEach((el) => { el.style.fontSize = shared; });
     visible.forEach((el) => fitsAt(el, 13));
-    // Center the first tag on the name's text, which sits a little lower once a long name shrinks.
-    visible.forEach((el) => {
-      const card = el.closest('.char');
-      const pill = card?.querySelector('.tags > :first-child');
-      if (!pill) return;
-      range.selectNodeContents(el);
-      const text = range.getBoundingClientRect();
-      const mid = (text.top + text.bottom) / 2 - card.getBoundingClientRect().top - card.clientTop;
-      pill.parentElement.style.top = `${Math.round(mid - pill.offsetHeight / 2)}px`;
-    });
+    clearFaces();
   };
+
+  // Keep faces clear of the text: if any line of a card's name block sits at the height of the
+  // character's head and reaches it, slide the render right until there's a small gap. The head may
+  // go a little past the card's edge (up to 30% of its width, mostly hair, horns or ears), never more.
+  // The head's position in the render comes from the deploy.
+  const FACE_GAP = 10;
+  function clearFaces() {
+    document.querySelectorAll('.banner .art').forEach((art) => {
+      art.style.setProperty('--shift', '0px');
+      const card = art.closest('.char');
+      const cr = card.getBoundingClientRect();
+      if (!cr.width) return;
+      const ar = art.getBoundingClientRect();
+      const headL = ar.left + ar.width * Number(art.dataset.headL) - cr.left;
+      const headR = ar.left + ar.width * Number(art.dataset.headR) - cr.left;
+      const headTop = ar.top + ar.height * Number(art.style.getPropertyValue('--ft')) - cr.top;
+      const headBottom = ar.top + ar.height * Number(art.dataset.headB) - cr.top;
+      let textRight = 0;
+      card.querySelectorAll('.ident > *').forEach((line) => {
+        range.selectNodeContents(line);
+        const t = range.getBoundingClientRect();
+        if (t.bottom - cr.top > headTop && t.top - cr.top < headBottom) textRight = Math.max(textRight, t.right - cr.left);
+      });
+      const want = Math.max(0, textRight + FACE_GAP - headL);
+      const room = Math.max(0, cr.width - headR + 0.3 * (headR - headL));
+      art.style.setProperty('--shift', `${Math.round(Math.min(want, room))}px`);
+    });
+  }
+
+  // Section buttons (Gear, Professions, Mythic+, Raids) open their drawer under the buttons, one at a time.
+  document.addEventListener('click', (e) => {
+    const button = e.target.closest?.('.banner [data-open]');
+    if (!button) return;
+    const card = button.closest('.char');
+    const opening = button.getAttribute('aria-expanded') !== 'true';
+    card.querySelectorAll('[data-open]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+    card.querySelectorAll('[data-drawer]').forEach((d) => { d.hidden = true; });
+    if (opening) {
+      button.setAttribute('aria-expanded', 'true');
+      card.querySelector(`[data-drawer="${button.dataset.open}"]`).hidden = false;
+    }
+  });
   let fitQueued = false;
   const nameObserver = new ResizeObserver(() => {
     if (fitQueued) return;
@@ -171,6 +198,8 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
       : hoursMinutes(sec);
   };
 
+  // Same layout as the Forever/Modern cards (ModernCharacter.astro), minus the render, which the
+  // server doesn't have: those cards just get the class-coloured glow.
   function card(c) {
     const owner = c.owner;
     const color = CLASS_COLORS[c.className] || 'var(--text)';
@@ -180,33 +209,42 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
         + `<span class="ilvl">${i.itemLevel ?? ''}</span></li>`)
       .join('');
     const professions = (c.professions || [])
-      .map((p) => `<tr><td>${esc(p.name)}</td><td class="skill">${p.skill}${p.max ? `<span class="muted"> / ${p.max}</span>` : ''}</td></tr>`)
+      .map((p) => `<tr><td>${esc(p.name)}${p.max ? `<div class="bar"><i style="width: ${Math.min(100, Math.round((100 * p.skill) / p.max))}%"></i></div>` : ''}</td>`
+        + `<td class="skill">${p.skill}${p.max ? `<span class="muted"> / ${p.max}</span>` : ''}</td></tr>`)
       .join('');
+    const seen = c.online ? 'Online now'
+      : c.lastSeen ? `Last seen ${new Date(c.lastSeen).toLocaleDateString('en-CA', { dateStyle: 'medium', timeZone: 'America/Toronto' })}` : '';
     return `
-      <article class="char panel" style="--class: ${color}" data-filter-item data-owner="${esc(owner || '')}">
-        ${owner || c.hardcore ? `<div class="tags">${owner ? `<span class="owner" data-owner="${esc(owner)}">${esc(owner)}</span>` : ''}${c.hardcore ? '<span class="hardcore" title="Hardcore">HC</span>' : ''}</div>` : ''}
-        <div class="body">
-          <header>
-            <div class="portrait">
-              <img class="class-icon" src="${classIcon(c)}" alt="${esc(c.className)}" width="56" height="56" loading="lazy">
-              <img class="race-icon" src="${raceIcon(c)}" alt="${esc(`${c.gender} ${c.race}`)}" width="24" height="24" loading="lazy">
-            </div>
-            <div class="ident">
-              <h3 class="cname">${armoryLink('character', c.name, esc(c.name))}
-                <span class="dot ${c.online ? 'on' : ''}" title="${c.online ? 'Online' : 'Offline'}"></span>
-              </h3>
-              <div class="sub">Level ${c.level} <span title="${esc(c.race)}">${esc(raceLabel(c.race))}</span> <span class="cls">${c.spec ? `${esc(c.spec)} ` : ''}${esc(c.className)}</span></div>
-              ${c.guild ? `<div class="sub muted">${armoryLink('guild', c.guild, `&lt;${esc(c.guild)}&gt;`)}</div>` : ''}
-            </div>
-          </header>
-          <dl class="stats">
-            ${c.itemLevel ? `<div><dt>Item level</dt><dd>${c.itemLevel}</dd></div>` : ''}
-            <div><dt>Played</dt><dd>${played(c.playedSeconds || 0)}</dd></div>
-            ${c.honorableKills ? `<div><dt>Honor kills</dt><dd>${c.honorableKills}</dd></div>` : ''}
-          </dl>
-          ${gear ? `<details class="acc"><summary><span>Equipment</span></summary><ul class="gear">${gear}</ul></details>` : ''}
-          ${professions ? `<details class="acc"><summary><span>Professions</span></summary><table class="profs"><tbody>${professions}</tbody></table></details>` : ''}
-          <footer class="small muted">${c.online ? 'Online now' : c.lastSeen ? `Last seen ${new Date(c.lastSeen).toLocaleDateString('en-CA', { dateStyle: 'medium', timeZone: 'America/Toronto' })}` : ''}</footer>
+      <article class="char banner panel" style="--class: ${color}" data-filter-item data-owner="${esc(owner || '')}">
+        <div class="glow"></div><div class="shade"></div>
+        <div class="top">
+          <div class="pills">${owner ? `<span class="owner" data-owner="${esc(owner)}">${esc(owner)}</span>` : ''}${c.hardcore ? '<span class="hardcore" title="Hardcore">HC</span>' : ''}</div>
+          ${c.guild ? `<span class="where">${armoryLink('guild', c.guild, `&lt;${esc(c.guild)}&gt;`)}</span>` : ''}
+        </div>
+        <header>
+          <div class="portrait">
+            <img class="main" src="${classIcon(c)}" alt="${esc(c.className)}" width="60" height="60" loading="lazy">
+            <img class="race-icon" src="${raceIcon(c)}" alt="${esc(`${c.gender} ${c.race}`)}" width="24" height="24" loading="lazy">
+          </div>
+          <div class="ident">
+            <h3 class="cname">${armoryLink('character', c.name, esc(c.name))}<span class="dot ${c.online ? 'on' : ''}" title="${c.online ? 'Online' : 'Offline'}"></span></h3>
+            <div class="line">Level ${c.level} <span title="${esc(c.race)}">${esc(raceLabel(c.race))}</span></div>
+            <div class="line cls">${c.spec ? `${esc(c.spec)} ` : ''}${esc(c.className)}</div>
+            ${seen ? `<div class="line seen">${seen}</div>` : ''}
+          </div>
+        </header>
+        <div class="rest">
+          <div class="chips">
+            ${c.itemLevel ? `<span class="chip">Item level <b>${c.itemLevel}</b></span>` : ''}
+            <span class="chip">Played <b>${played(c.playedSeconds || 0)}</b></span>
+            ${c.honorableKills ? `<span class="chip">Honor kills <b>${c.honorableKills}</b></span>` : ''}
+          </div>
+          ${gear || professions ? `<div class="sections">
+            ${gear ? '<button type="button" data-open="gear" aria-expanded="false">Gear</button>' : ''}
+            ${professions ? '<button type="button" data-open="profs" aria-expanded="false">Professions</button>' : ''}
+          </div>` : ''}
+          ${gear ? `<div class="drawer" data-drawer="gear" hidden><ul class="gear">${gear}</ul></div>` : ''}
+          ${professions ? `<div class="drawer" data-drawer="profs" hidden><table class="profs"><tbody>${professions}</tbody></table></div>` : ''}
         </div>
       </article>`;
   }
@@ -290,29 +328,6 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
   :global(.friends) { grid-column: 1 / -1; }
   :global(.friends-title) { font-size: 1rem; color: var(--muted); margin: 28px 0 16px; }
 
-  /* The Aethernal cards are injected by script, so their styles must be global. */
-  #aethernal :global(.char) { position: relative; overflow: hidden; border-top: 3px solid var(--class, var(--border)); display: flex; flex-direction: column; }
-  #aethernal :global(.body) { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
-  #aethernal :global(.body > footer) { margin-top: auto; }
-  #aethernal :global(header) { display: flex; gap: 14px; align-items: center; }
-  #aethernal :global(.char:has(.tags) .cname) { margin-right: 72px; }
-  #aethernal :global(.portrait) { position: relative; flex-shrink: 0; width: 56px; height: 56px; }
-  #aethernal :global(.class-icon) { width: 56px; height: 56px; border-radius: 8px; border: 2px solid var(--class); }
-  #aethernal :global(.race-icon) {
-    position: absolute; right: -6px; bottom: -6px; width: 24px; height: 24px;
-    border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--border);
-  }
-  #aethernal :global(.ident) { flex: 1; min-width: 0; }
-  #aethernal :global(.cname) { margin: 0; font-size: 1.35rem; color: var(--class); display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; }
-  #aethernal :global(.cname .dot) { flex-shrink: 0; }
-  #aethernal :global(.sub) { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #aethernal :global(.cname a), #aethernal :global(.sub a) { color: inherit; text-decoration: none; }
-  #aethernal :global(.cname a:hover), #aethernal :global(.sub a:hover) { text-decoration: underline; text-underline-offset: 3px; }
-  #aethernal :global(.cls) { display: block; color: var(--class); font-weight: 600; }
-  #aethernal :global(.dot) { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); opacity: 0.5; }
-  #aethernal :global(.dot.on) { background: var(--ok); opacity: 1; box-shadow: 0 0 8px var(--ok); }
-  #aethernal :global(.stats) { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0; }
-  #aethernal :global(.stats dt) { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-  #aethernal :global(.stats dd) { margin: 0; font-size: 1.25rem; font-weight: 700; }
-  #aethernal :global(.stats dd [title]) { cursor: help; }
+  /* Cards in a row line up at the top; an opened drawer only grows its own card. */
+  .chars, #aethernal :global(.chars) { align-items: start; }
 </style>

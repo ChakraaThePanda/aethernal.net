@@ -8,6 +8,7 @@
   --bg-rgb: 4, 11, 13;
   --bg-hi: #0d2027;
   --panel: #0b171c;
+  --panel-rgb: 11, 23, 28;
   --panel-alt: #102229;
   --border: #22434f;
   --border-hi: #6fc3ee;
@@ -139,17 +140,131 @@ details.acc > summary > span:first-child { flex: 1; }
 }
 .hardcore[hidden] { display: none; }
 
-/* Whose character a card is, stacked in the top-right corner with any other tags. */
-.char .tags {
-  position: absolute; top: 18px; right: 12px; z-index: 1;
-  display: flex; flex-direction: column; align-items: stretch; gap: 4px; text-align: center;
+/* ---------- WoW page character cards ("banner" cards) ----------
+   Built at deploy time for Forever/Modern (ModernCharacter.astro) and in the browser for Aethernal
+   (wow.astro), so the styles live here. Top to bottom: a row of pills (owner, HC) with the realm or
+   ruleset; portrait and name; stat chips; section buttons that open drawers below them. Behind it all,
+   the character's render, big and standing in the card's right half, with a shade on the left so the
+   text stays readable and see-through buttons so the character shows through. */
+.char.banner {
+  --ui-a: 0.45;     /* how solid the buttons and chips are */
+  --art-o: 0.9;     /* render opacity */
+  --fade: 0.8;      /* strength of the shade on the left */
+  --fig-h: 270px;   /* every character is scaled to fit this height... */
+  --fig-w: 170px;   /* ...and this upper-body width (wide races like Tauren hit this first) */
+  --focus: 79%;     /* where the middle of the character stands, across the card */
+  --fig-top: 30px;  /* gap between the card's top and the character's head */
+  position: relative; overflow: hidden; isolation: isolate;
 }
-.char .hardcore { font-size: 0.7rem; padding: 2px 10px; line-height: normal; }
-.char .owner {
-  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--text); background: rgba(var(--bg-rgb), 0.75);
-  border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px;
+.banner .glow {
+  position: absolute; inset: 0 0 auto; height: 140px; z-index: -3; pointer-events: none;
+  background: radial-gradient(120% 140% at 85% 0%, color-mix(in srgb, var(--class, var(--accent)) 38%, transparent), transparent 65%),
+              linear-gradient(180deg, color-mix(in srgb, var(--class, var(--accent)) 16%, transparent), transparent);
 }
+/* The whole render, never cropped. --ft/--fh/--fw/--fx say where the character stands in it (fractions
+   of the image, measured at deploy). The image is scaled so the character fits --fig-w x --fig-h, its
+   head lands --fig-top below the card's top and its middle at --focus; --shift (set by the page script)
+   nudges it right when a long name would cover the face. Renders are 4:3. */
+.banner .art {
+  --art-h: min(calc(var(--fig-h) / var(--fh)), calc(var(--fig-w) / (var(--fw) * 1.3333)));
+  position: absolute; z-index: -2; pointer-events: none; opacity: var(--art-o);
+  width: calc(var(--art-h) * 1.3333); height: var(--art-h);
+  left: calc(var(--focus) - var(--art-h) * 1.3333 * var(--fx) + var(--shift, 0px));
+  top: calc(var(--fig-top) - var(--art-h) * var(--ft));
+  background: center / 100% 100% no-repeat;
+  mask-image: linear-gradient(180deg, #000 60%, transparent 82%);
+}
+.banner .shade {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(90deg, rgba(var(--panel-rgb), var(--fade)) 0%, rgba(var(--panel-rgb), calc(var(--fade) * 0.7)) 40%, transparent 75%);
+}
+.banner .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px 0; min-height: 34px; }
+.banner .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; min-width: 0; }
+.banner .where {
+  margin-left: auto; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; text-shadow: 0 1px 3px #000;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.banner .where a { color: inherit; text-decoration: none; }
+.banner .where a:hover { text-decoration: underline; }
+.banner .owner, .banner .hardcore {
+  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  line-height: 1; border-radius: 999px; padding: 4px 9px; white-space: nowrap;
+}
+.banner .owner { color: var(--owner, var(--text)); background: rgba(var(--bg-rgb), 0.75); border: 1px solid var(--owner, var(--border)); }
+.banner header { display: flex; gap: 14px; align-items: center; padding: 26px 16px 0; }
+.banner .portrait { position: relative; flex-shrink: 0; width: 60px; height: 60px; }
+.banner .portrait .main {
+  display: block; width: 60px; height: 60px; border-radius: 8px; border: 2px solid var(--class, var(--border));
+  object-fit: cover; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+.banner .race-icon {
+  position: absolute; right: -6px; bottom: -6px; width: 24px; height: 24px;
+  border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--border);
+}
+.banner .ident { flex: 1; min-width: 0; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9); }
+/* Names stay on one line; very long ones shrink to fit (see fitAll in wow.astro). */
+.banner .cname {
+  margin: 0; font-size: 1.35rem; color: var(--class, var(--text));
+  display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden;
+}
+.banner .cname a { color: inherit; text-decoration: none; overflow: hidden; text-overflow: ellipsis; }
+.banner .cname a:hover { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+.banner .cname .dot { flex-shrink: 0; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); opacity: 0.5; }
+.banner .cname .dot.on { background: var(--ok); opacity: 1; box-shadow: 0 0 8px var(--ok); }
+.banner .line { font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.banner .line.cls { color: var(--class); font-weight: 600; }
+.banner .line.seen { font-size: 0.76rem; color: var(--muted); }
+.banner .rest { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.banner .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.banner .chip {
+  font-size: 0.78rem; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+  background: rgba(var(--bg-rgb), var(--ui-a)); border: 1px solid rgba(var(--accent-rgb), 0.15); backdrop-filter: blur(3px);
+}
+.banner .chip b { font-size: 0.95rem; margin-left: 2px; }
+.banner .chip [title] { cursor: help; }
+/* Two buttons sit in one row; four wrap into two rows. */
+.banner .sections { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px; }
+.banner .sections button {
+  font: inherit; font-size: 0.82rem; font-weight: 500; color: var(--text); cursor: pointer; padding: 7px 6px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; border: 1px solid rgba(var(--accent-rgb), 0.15);
+  background: rgba(var(--bg-rgb), var(--ui-a)); backdrop-filter: blur(3px);
+}
+.banner .sections button:hover { border-color: rgba(var(--accent-rgb), 0.4); }
+.banner .sections button::before { content: '\25B8'; color: var(--accent); margin-right: 6px; transition: transform 0.15s; }
+.banner .sections button[aria-expanded="true"] { border-color: rgba(var(--accent-rgb), 0.5); }
+.banner .sections button[aria-expanded="true"]::before { transform: rotate(90deg); }
+.banner .sections .val { margin-left: 6px; font-size: 0.74rem; font-weight: 700; color: var(--accent); }
+.banner .drawer {
+  border-radius: 6px; border: 1px solid rgba(var(--accent-rgb), 0.25);
+  background: rgba(var(--bg-rgb), calc(var(--ui-a) + 0.3)); backdrop-filter: blur(6px);
+}
+.banner .drawer-head { display: flex; justify-content: space-between; gap: 8px; padding: 7px 12px 2px; font-size: 0.72rem; color: var(--muted); }
+.banner .drawer-empty { margin: 0; padding: 8px 12px; font-size: 0.82rem; color: var(--muted); }
+.banner .gear { list-style: none; margin: 0; padding: 4px 0; font-size: 0.82rem; }
+.banner .gear li { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: 8px; padding: 3px 12px; }
+.banner .gear a { text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.banner .gear a:hover { text-decoration: underline; }
+.banner .gear .slot, .banner .gear .ilvl { color: var(--muted); }
+.banner .profs { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.banner .profs td { padding: 3px 12px; }
+.banner .profs tr:first-child td { padding-top: 7px; }
+.banner .profs tr:last-child td { padding-bottom: 7px; }
+.banner .profs .skill { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; vertical-align: top; }
+.banner .profs .skill .muted { font-weight: normal; }
+.banner .profs .bar { height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.08); margin-top: 3px; overflow: hidden; }
+.banner .profs .bar i { display: block; height: 100%; background: var(--accent); }
+.banner .rows { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.banner .rows td, .banner .rows th { padding: 4px 10px; }
+.banner .rows tbody tr + tr td { border-top: 1px solid rgba(var(--accent-rgb), 0.08); }
+.banner .rows th { color: var(--muted); font-weight: 600; font-size: 0.7rem; }
+.banner .rows td:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 0; width: 100%; }
+.banner .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.banner .key { text-align: right; font-weight: 600; white-space: nowrap; }
+.banner .key.timed { color: var(--accent); }
+.banner .key.depleted, .banner .key.none, .banner .num.none { color: var(--muted); font-weight: normal; }
+.banner .raids td.num { padding-left: 4px; padding-right: 8px; }
+.banner .raids .done { color: var(--ok); font-weight: 600; }
 
 /* One color per person, used by owner tags and the WoW page filter. */
 [data-owner="Pat"] { --owner: #ff7c0a; }  /* Druid orange */
@@ -161,7 +276,6 @@ details.acc > summary > span:first-child { flex: 1; }
 [data-owner="Will"] { --owner: #f48cba; }   /* Paladin pink */
 [data-owner="Sam"] { --owner: #00ff98; }    /* Monk jade */
 [data-owner="Friends"] { --owner: var(--accent); } /* The WoW page's Friends checkbox */
-.char .owner { color: var(--owner, var(--text)); border-color: var(--owner, var(--border)); }
 
 /* Cards set display:grid, which would otherwise override the hidden attribute. */
 [hidden] { display: none !important; }
