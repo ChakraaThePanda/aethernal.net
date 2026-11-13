@@ -129,7 +129,28 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
     names.forEach((el) => { el.style.fontSize = shared; });
     visible.forEach((el) => fitsAt(el, 13));
     clearFaces();
+    holdButtons();
   };
+
+  // Section buttons sit at the bottom of each card so they line up across a row. Opening a drawer makes its
+  // row taller, which would slide the other cards' buttons down with it. So while a drawer is open in a
+  // grid, every card's buttons are pinned where they sit with all drawers closed. Re-run after a drawer
+  // opens or closes and whenever the cards change size (via fitAll).
+  function holdButtons() {
+    document.querySelectorAll('.chars').forEach((grid) => {
+      const cards = [...grid.children].filter((el) => el.matches('.char'));
+      const sections = cards.map((card) => card.querySelector('.sections')).filter(Boolean);
+      sections.forEach((s) => { s.style.marginTop = ''; });
+      const open = cards.flatMap((card) => [...card.querySelectorAll('[data-drawer]:not([hidden])')]);
+      if (!open.length) return;
+      open.forEach((d) => { d.hidden = true; });
+      const closedTops = sections.map((s) => s.getBoundingClientRect().top);
+      sections.forEach((s) => { s.style.marginTop = '0px'; });
+      const zeroTops = sections.map((s) => s.getBoundingClientRect().top);
+      sections.forEach((s, i) => { s.style.marginTop = `${closedTops[i] - zeroTops[i]}px`; });
+      open.forEach((d) => { d.hidden = false; });
+    });
+  }
 
   // Keep faces clear of the text: if any line of a card's name block sits at the height of the
   // character's head and reaches it, slide the render right until there's a small gap. The head may
@@ -171,6 +192,7 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
       button.setAttribute('aria-expanded', 'true');
       card.querySelector(`[data-drawer="${button.dataset.open}"]`).hidden = false;
     }
+    holdButtons();
   });
   let fitQueued = false;
   const nameObserver = new ResizeObserver(() => {
@@ -291,6 +313,7 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
         button.setAttribute('aria-expanded', 'true');
         card.querySelector(`[data-drawer="${key}"]`).hidden = false;
       }
+      holdButtons();
       window.applyOwnerFilter?.();
       fitNames();
       window.$WowheadPower?.refreshLinks();

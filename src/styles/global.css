@@ -205,13 +205,12 @@ a.card:hover, a.card:focus-visible {
 .banner .chip b { font-size: 0.95rem; margin-left: 2px; }
 .banner .chip [title] { cursor: help; }
 /* At most two buttons per row (four make two rows), at the bottom of the card so they line up across a row
-   of cards. While a drawer is open in a grid the row grows, so its buttons go back under the chips instead
-   of sliding down with it. */
+   of cards. While a drawer is open the row grows; the page script (holdButtons in wow.astro) then pins every
+   card's buttons where they were, so none slide down with it or jump up. */
 .banner .sections {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(max(110px, calc(50% - 3px)), 1fr)); gap: 6px;
   margin-top: auto;
 }
-.chars:has(> .char .drawer:not([hidden])) > .char .sections { margin-top: 0; }
 .banner .sections button {
   font: inherit; font-size: 0.82rem; font-weight: 500; color: var(--text); cursor: pointer; padding: 7px 6px;
   display: flex; align-items: center; justify-content: center;
