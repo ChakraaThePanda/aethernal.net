@@ -263,7 +263,10 @@ async function fetchCharacter(api, c) {
     settle(api(`${base}/professions`)),
   ]);
   const activeSpec = profile.active_spec?.name
-    ?? specs?.specialization_groups?.find((g) => g.is_active)?.specializations?.[0]?.specialization?.name
+    // A group lists every tree with points in it, in tree order; the spec is the one with the most.
+    ?? specs?.specialization_groups?.find((g) => g.is_active)?.specializations
+      ?.reduce((best, s) => (!best || (s.spent_points ?? 0) > (best.spent_points ?? 0) ? s : best), null)
+      ?.specialization?.name
     ?? null;
   // Per-dungeon best runs live on the season endpoint. Use the current season when the game data
   // API gives it (no runs there yet means none this season), else the character's newest season.
