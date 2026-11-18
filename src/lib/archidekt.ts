@@ -46,15 +46,16 @@ const loadLastGood = () =>
 const scryfallImage = (uid: string) => `https://cards.scryfall.io/normal/front/${uid[0]}/${uid[1]}/${uid}.jpg`;
 
 // Matches the spreadsheet's ARCHIDEKT_PRICE: TCGplayer (foil price for foils), falling back to the
-// regular price and then other vendors only when a price is missing. Cards whose categories are all
-// left out of the price on Archidekt (Maybeboard, usually) don't count.
+// regular price and then other vendors only when a price is missing. A card in any category left out
+// of the price on Archidekt (Maybeboard, usually) doesn't count, even if it also has a regular tag
+// like "Ramp".
 function deckPrice(deck: any): number {
-  const priceable = new Map<string, boolean>((deck.categories ?? []).map((c: any) => [c.name, !!c.includedInPrice]));
+  const unpriced = new Set<string>((deck.categories ?? []).filter((c: any) => !c.includedInPrice).map((c: any) => c.name));
   let total = 0;
   for (const row of deck.cards ?? []) {
     const qty = Number(row.quantity) || 0;
     const cats: string[] = row.categories ?? [];
-    if (!qty || (cats.length && !cats.some((c) => priceable.get(c) !== false))) continue;
+    if (!qty || cats.some((c) => unpriced.has(c))) continue;
     const prices = row.card?.prices;
     if (!prices) continue;
     const foil = String(row.modifier ?? '').toLowerCase().includes('foil');
