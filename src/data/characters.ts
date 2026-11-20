@@ -30,6 +30,8 @@ export const blizzardCharacters: BlizzardCharacter[] = [
   // hyphenated slug of the full name: /profile/wow/character/monsieur-fish?namespace=profile-forever-us
   { name: 'Chakraa Arcana', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'PVE' },
   { name: 'Monsieur Fish', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'PVE' },
+  { name: 'Melodie Arcana', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'PVE' },
+  { name: 'Monsieur Gouda', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'PVE' },
   { name: 'Madame Chips', region: 'us', namespace: 'profile-forever-us', owner: 'Mimi', game: 'forever', ruleset: 'PVE' },
   { name: 'Blinky Thewise', region: 'us', namespace: 'profile-forever-us', owner: 'Blinky', game: 'forever', ruleset: 'PVP' },
   { name: 'Zaphyel Highwind', region: 'us', namespace: 'profile-forever-us', owner: 'Mathew', game: 'forever', ruleset: 'PVP' },
