@@ -15,8 +15,8 @@ export const players: Player[] = [
   {
     name: 'Pat',
     decks: [
+      { name: 'All Will Serve in Death', id: 28723681 },
       { name: 'Cookies & Cream', id: 25896354 },
-      { name: "Guess Who's Back?", id: 23493749 },
       { name: 'Peskipiksi Pesternomi', id: 20622633 },
       { name: 'Remember That We Once Lived', id: 16913370 },
     ],
@@ -28,7 +28,7 @@ export const players: Player[] = [
       { name: 'Aloy vs the Machines', id: 17985803 },
       { name: 'BOY!', id: 16427411 },
       { name: 'Go to Hell!', id: 23236962 },
-      { name: 'Meow Meow!', id: 12901958 },
+      { name: 'Sparkling Skylands', id: 28690256 },
       { name: 'Will Ferrell', id: 26222734 },
     ],
   },
