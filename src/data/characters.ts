@@ -6,7 +6,10 @@
 // `game` picks the section the card shows in on the WoW page; it defaults to 'modern'.
 export type BlizzardGame = 'modern' | 'forever';
 
-export const GAME_LABELS: Record<BlizzardGame, string> = { modern: 'Modern', forever: 'Forever' };
+// The retail game is labelled with the current expansion. Change this when a new expansion launches.
+export const CURRENT_EXPANSION = 'Midnight';
+
+export const GAME_LABELS: Record<BlizzardGame, string> = { modern: CURRENT_EXPANSION, forever: 'Forever' };
 
 export interface BlizzardCharacter {
   name: string;

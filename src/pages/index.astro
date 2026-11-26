@@ -67,7 +67,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
             <img class="portrait" src={c.avatar ?? classIconUrl(c.className)} alt="" width="36" height="36" loading="lazy" />
             <span class="who">
               <span class="cname">{c.name}</span>
-              <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · {GAME_LABELS[c.game as keyof typeof GAME_LABELS] ?? 'Modern'}</span>
+              <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · {GAME_LABELS[c.game as keyof typeof GAME_LABELS] ?? GAME_LABELS.modern}</span>
             </span>
             <span class="tags">{rulesetLabel(c.ruleset) === 'Hardcore' && <span class="hardcore" title="Hardcore">HC</span>}{c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}</span>
           </li>

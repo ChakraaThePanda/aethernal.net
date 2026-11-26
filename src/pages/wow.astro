@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import ModernCharacter from '../components/ModernCharacter.astro';
 import OwnerFilter from '../components/OwnerFilter.astro';
-import { aethernalApi, blizzardCharacters } from '../data/characters';
+import { aethernalApi, blizzardCharacters, CURRENT_EXPANSION } from '../data/characters';
 import { PRIORITY_OWNERS, sortRoster } from '../lib/wow';
 import { loadModern } from '../lib/modern';
 
@@ -21,16 +21,16 @@ const modern = fetched && sortRoster(fetched.filter((c) => (c.game ?? 'modern') 
 const forever = sortRoster((fetched ?? []).filter((c) => c.game === 'forever' && !c.error), owners);
 const foreverListed = blizzardCharacters.filter((c) => c.game === 'forever');
 // The first tab is the one shown on load (and when the URL names none).
-const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
+const firstTab = foreverListed.length > 0 ? 'Forever' : CURRENT_EXPANSION;
 ---
-<Base title="Our Characters" description="Live World of Warcraft character profiles for Pat, Mimi and friends on Forever, Modern and the Aethernal server.">
+<Base title="Our Characters" description={`Live World of Warcraft character profiles for Pat, Mimi and friends on Forever, ${CURRENT_EXPANSION} and the Aethernal server.`}>
   <h1>Our Characters</h1>
-  <p class="lead">Our characters on Forever, Modern and Aethernal.</p>
+  <p class="lead">Our characters on Forever, {CURRENT_EXPANSION} and Aethernal.</p>
 
   <div class="toolbar">
     <div class="tabs" role="tablist" aria-label="Game">
       {foreverListed.length > 0 && <button type="button" role="tab" class="tab" data-section-toggle="Forever" aria-selected={String(firstTab === 'Forever')}>Forever <span class="n" data-count></span></button>}
-      <button type="button" role="tab" class="tab" data-section-toggle="Modern" aria-selected={String(firstTab === 'Modern')}>Modern <span class="n" data-count></span></button>
+      <button type="button" role="tab" class="tab" data-section-toggle={CURRENT_EXPANSION} aria-selected={String(firstTab === CURRENT_EXPANSION)}>{CURRENT_EXPANSION} <span class="n" data-count></span></button>
       <button type="button" role="tab" class="tab" data-section-toggle="Aethernal" aria-selected="false"><span id="realm-dot" class="realm-dot" hidden></span>Aethernal <span class="n" data-count></span></button>
     </div>
     <OwnerFilter owners={owners} core={PRIORITY_OWNERS} />
@@ -59,7 +59,7 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
     </section>
   )}
 
-  <section data-filter-group data-section="Modern" hidden={firstTab !== 'Modern'}>
+  <section data-filter-group data-section={CURRENT_EXPANSION} hidden={firstTab !== CURRENT_EXPANSION}>
     {modern ? (
       <>
         <div class="chars">
@@ -76,7 +76,7 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : 'Modern';
         <p class="panel empty muted" data-filter-empty hidden>No characters here with these filters.</p>
       </>
     ) : (
-      <p class="panel empty muted">Modern profiles appear here after the next deploy fetches them from Battle.net.</p>
+      <p class="panel empty muted">{CURRENT_EXPANSION} profiles appear here after the next deploy fetches them from Battle.net.</p>
     )}
   </section>
 
