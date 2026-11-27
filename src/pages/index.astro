@@ -97,7 +97,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
     </section>
   </div>
   ) : (
-    <section>
+    <section class="recent">
       <div class="section-head first">
         <h2 class="section-title">Recently played</h2>
         <a class="more" href="/wow/">All characters →</a>
@@ -266,6 +266,12 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
   /* Recently played, straight under the hero while the server is off. */
   .section-head.first { margin-top: 0; }
   .chars { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+  /* Three cards fit in a row from 1052px (3 x 340 + 2 gaps). Between that and one column, the row
+     holds two, which would leave the third alone on a second row: show just the two newest there. */
+  .recent { container-type: inline-size; }
+  @container (min-width: 696px) and (max-width: 1051.98px) {
+    .chars > :global(:nth-child(3)) { display: none; }
+  }
   .empty { padding: 18px 20px; margin: 0; }
   .more { font-size: 0.9rem; text-decoration: none; white-space: nowrap; }
   .more:hover { text-decoration: underline; }
