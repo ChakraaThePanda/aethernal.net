@@ -6,7 +6,7 @@ import { AETHERNAL_ENABLED, aethernalApi, GAME_LABELS } from '../data/characters
 import { deckInfo } from '../lib/archidekt';
 import { recentRepos } from '../lib/github';
 import { loadModern } from '../lib/modern';
-import { classColor, classIconUrl, rulesetLabel } from '../lib/wow';
+import { classColor, classIconUrl, lastSeenLabel, rulesetLabel } from '../lib/wow';
 
 const PANEL = 'https://wow.aethernal.net';
 
@@ -84,7 +84,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
             <span class="who">
               <span class="cname">{c.name}</span>
               <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · {GAME_LABELS[c.game as keyof typeof GAME_LABELS] ?? GAME_LABELS.modern}</span>
-              {c.lastLogin ? <span class="sub seen" data-time={c.lastLogin}></span> : null}
+              {c.lastLogin ? <span class="sub">{lastSeenLabel(c.lastLogin)}</span> : null}
             </span>
             <span class="tags">{rulesetLabel(c.ruleset) === 'Hardcore' && <span class="hardcore" title="Hardcore">HC</span>}{c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}</span>
           </li>
@@ -148,21 +148,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
 </Base>
 
 <script>
-  import { classColor, classIconUrl } from '../lib/wow';
-
-  // When each character was last played, worked out here so it stays current between deploys.
-  const DAY = 86_400_000;
-  const playedAgo = (t: number) => {
-    const days = Math.floor((Date.now() - t) / DAY);
-    if (days < 1) return 'Played today';
-    if (days < 2) return 'Played yesterday';
-    if (days < 60) return `Played ${days} days ago`;
-    if (days < 730) return `Played ${Math.floor(days / 30)} months ago`;
-    return `Played ${Math.floor(days / 365)} years ago`;
-  };
-  document.querySelectorAll<HTMLElement>('.seen[data-time]').forEach((el) => {
-    el.textContent = playedAgo(Number(el.dataset.time));
-  });
+  import { classColor, classIconUrl, lastSeenLabel } from '../lib/wow';
 
   // Live realm status and Aethernal characters from the account panel's public API.
   // Missing while the server is switched off (AETHERNAL_ENABLED): then nothing below runs.
@@ -212,7 +198,8 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
         li.querySelector<HTMLElement>('.hardcore')!.hidden = !c.hardcore;
         li.classList.toggle('online', c.online);
         li.dataset.played = String(c.online ? Date.now() : c.lastSeen ?? 0);
-        li.querySelector('.seen')!.textContent = c.online ? 'Online now' : c.lastSeen ? playedAgo(c.lastSeen) : '';
+        li.querySelector('.seen')!.textContent = c.online ? 'Online now'
+          : c.lastSeen ? lastSeenLabel(c.lastSeen) : '';
       }
       // Most recently played first; CSS shows the first four.
       [...roster.children]

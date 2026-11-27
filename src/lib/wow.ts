@@ -84,3 +84,7 @@ const paneIndex = (slot: string) => {
 };
 export const sortEquipment = <T extends { slot: string }>(items: T[]): T[] =>
   [...items].sort((a, b) => paneIndex(a.slot) - paneIndex(b.slot));
+
+// "Last seen Nov 26, 2026" (Eastern time), as on the character cards.
+export const lastSeenLabel = (t: number) =>
+  `Last seen ${new Date(t).toLocaleDateString('en-CA', { dateStyle: 'medium', timeZone: 'America/Toronto' })}`;

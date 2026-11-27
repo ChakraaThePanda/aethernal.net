@@ -1,5 +1,5 @@
 ---
-import { classColor, qualityVar, classIconUrl, raceIconUrl, rulesetLabel, raceLabel, sortEquipment } from '../lib/wow';
+import { classColor, qualityVar, classIconUrl, raceIconUrl, rulesetLabel, raceLabel, sortEquipment, lastSeenLabel } from '../lib/wow';
 
 interface Props {
   c: any; // one entry from src/data/generated/modern.json
@@ -13,7 +13,7 @@ const hardcore = rulesetLabel(c.ruleset) === 'Hardcore';
 // Item links point at the matching Wowhead database, so the link and its tooltip show the item as it
 // is in that game (Forever items live under /forever/, Modern under the root).
 const wowheadItem = c.game === 'forever' ? 'https://www.wowhead.com/forever/item=' : 'https://www.wowhead.com/item=';
-const lastSeen = c.lastLogin ? new Date(c.lastLogin).toLocaleDateString('en-CA', { dateStyle: 'medium', timeZone: 'America/Toronto' }) : null;
+const lastSeen = c.lastLogin ? lastSeenLabel(c.lastLogin) : null;
 
 // Where the character stands in its render (measured during the deploy, see scripts/render-figure.mjs).
 // Typical values stand in when it couldn't be measured, so the render still shows.
@@ -83,7 +83,7 @@ const sections = [
         {c.guild && <div class="line home">{c.guildUrl
             ? <a href={c.guildUrl} target="_blank" rel="noopener" title="Open the guild in the Armory">&lt;{c.guild}&gt;</a>
             : <>&lt;{c.guild}&gt;</>}</div>}
-        {lastSeen && <div class="line seen">Last seen {lastSeen}</div>}
+        {lastSeen && <div class="line seen">{lastSeen}</div>}
       </div>
     </header>
 

@@ -98,7 +98,7 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : CURRENT_EXPANSION;
 </Base>
 
 <script>
-  import { CLASS_COLORS, PRIORITY_OWNERS, sortRoster, classIconUrl, raceIconUrl, raceLabel, sortEquipment } from '../lib/wow';
+  import { CLASS_COLORS, PRIORITY_OWNERS, sortRoster, classIconUrl, raceIconUrl, raceLabel, sortEquipment, lastSeenLabel } from '../lib/wow';
   import { fitNames, holdButtons } from '../lib/cards';
 
   // Aethernal: fetched live from the account panel's public API.
@@ -138,7 +138,7 @@ const firstTab = foreverListed.length > 0 ? 'Forever' : CURRENT_EXPANSION;
         + `<td class="skill">${p.skill}${p.max ? `<span class="muted"> / ${p.max}</span>` : ''}</td></tr>`)
       .join('');
     const seen = c.online ? 'Online now'
-      : c.lastSeen ? `Last seen ${new Date(c.lastSeen).toLocaleDateString('en-CA', { dateStyle: 'medium', timeZone: 'America/Toronto' })}` : '';
+      : c.lastSeen ? lastSeenLabel(c.lastSeen) : '';
     return `
       <article class="char banner panel" style="--class: ${color}" data-filter-item data-owner="${esc(owner || '')}" data-name="${esc(c.name)}">
         <div class="glow"></div><div class="shade"></div>
