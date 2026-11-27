@@ -38,6 +38,7 @@ export const blizzardCharacters: BlizzardCharacter[] = [
   { name: 'Melodie Arcana', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'PVE' },
   { name: 'Monsieur Gouda', region: 'us', namespace: 'profile-forever-us', owner: 'Pat', game: 'forever', ruleset: 'PVE' },
   { name: 'Madame Chips', region: 'us', namespace: 'profile-forever-us', owner: 'Mimi', game: 'forever', ruleset: 'PVE' },
+  { name: 'Madame Feta', region: 'us', namespace: 'profile-forever-us', owner: 'Mimi', game: 'forever', ruleset: 'PVE' },
   { name: 'Lil Criss', region: 'us', namespace: 'profile-forever-us', owner: 'Blinky', game: 'forever', ruleset: 'PVP' },
   { name: 'Zaphyel Highwind', region: 'us', namespace: 'profile-forever-us', owner: 'Mathew', game: 'forever', ruleset: 'PVP' },
   { name: 'Uchai Ecksdee', region: 'us', namespace: 'profile-forever-us', owner: 'Sam', game: 'forever', ruleset: 'PVE' },
