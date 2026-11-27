@@ -44,6 +44,11 @@ export const blizzardCharacters: BlizzardCharacter[] = [
   { name: 'Selven Iam', region: 'us', namespace: 'profile-forever-us', owner: 'Will', game: 'forever', ruleset: 'PVP' },
 ];
 
+// The Aethernal server is shut down for now. While this is false the site hides everything that
+// points at it: the menu's Account Panel and Armory tiles, the realm box on the homepage and the
+// Aethernal section on /wow (and nothing calls its API). Set it back to true when the server is up.
+export const AETHERNAL_ENABLED = false;
+
 // Aethernal characters are fetched live in the browser from the account panel's public API.
 // Which characters appear (and their owners) is set on the server: PUBLIC_CHARACTERS in the
 // AzerothCore docker-compose.override.yml, as Name:Owner pairs.

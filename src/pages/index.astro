@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import DeckCard from '../components/DeckCard.astro';
 import { players } from '../data/decks';
-import { aethernalApi, GAME_LABELS } from '../data/characters';
+import { AETHERNAL_ENABLED, aethernalApi, GAME_LABELS } from '../data/characters';
 import { deckInfo } from '../lib/archidekt';
 import { recentRepos } from '../lib/github';
 import { loadModern } from '../lib/modern';
@@ -31,10 +31,13 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
   <section class="hero">
     <img class="banner" src="/images/banner.webp" alt="Aethernal" width="1261" height="350" />
     <div class="ornate-divider" aria-hidden="true">&#9670;</div>
-    <p class="lead">Our WoW characters, a Wrath of the Lich King realm, Commander decks and other projects.</p>
+    <p class="lead">{AETHERNAL_ENABLED
+      ? 'Our WoW characters, a Wrath of the Lich King realm, Commander decks and other projects.'
+      : 'Our WoW characters, Commander decks and other projects.'}</p>
   </section>
 
   <div class="duo">
+    {AETHERNAL_ENABLED && (
     <section class="panel box realm">
       <div class="box-head">
         <h2>Aethernal realm</h2>
@@ -55,6 +58,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
         <a class="btn" href={`${PANEL}/`} data-same-tab>Log in</a>
       </div>
     </section>
+    )}
 
     <section class="panel box">
       <div class="box-head">
@@ -121,20 +125,21 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
   )}
 
 
-  <div id="aethernal-api" data-api={aethernalApi} hidden></div>
+  {AETHERNAL_ENABLED && <div id="aethernal-api" data-api={aethernalApi} hidden></div>}
 </Base>
 
 <script>
   import { classColor, classIconUrl } from '../lib/wow';
 
   // Live realm status and Aethernal characters from the account panel's public API.
-  const api = document.getElementById('aethernal-api')!;
+  // Missing while the server is switched off (AETHERNAL_ENABLED): then nothing below runs.
+  const api = document.getElementById('aethernal-api');
   const status = document.getElementById('realm-status')!;
   const row = document.getElementById('aethernal-row') as HTMLTemplateElement;
 
   async function load() {
     try {
-      const res = await fetch(api.dataset.api!);
+      const res = await fetch(api!.dataset.api!);
       if (!res.ok) throw new Error(String(res.status));
       const data = await res.json();
       status.className = `status ${data.realm.online ? 'on' : 'off'}`;
@@ -192,20 +197,22 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
     loadedAt = Date.now();
     load();
   };
-  refresh();
-  setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, REFRESH_MS);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && Date.now() - loadedAt >= REFRESH_MS) refresh();
-  });
+  if (api) {
+    refresh();
+    setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, REFRESH_MS);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && Date.now() - loadedAt >= REFRESH_MS) refresh();
+    });
 
-  document.querySelector('#realmlist .copy')!.addEventListener('click', async (e) => {
-    const btn = e.currentTarget as HTMLButtonElement;
-    try {
-      await navigator.clipboard.writeText(document.querySelector('#realmlist code')!.textContent ?? '');
-      btn.textContent = 'Copied';
-      setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
-    } catch { /* clipboard blocked: the text is still selectable */ }
-  });
+    document.querySelector('#realmlist .copy')!.addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      try {
+        await navigator.clipboard.writeText(document.querySelector('#realmlist code')!.textContent ?? '');
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+      } catch { /* clipboard blocked: the text is still selectable */ }
+    });
+  }
 </script>
 
 <style>

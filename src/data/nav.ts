@@ -1,6 +1,6 @@
 // The site menu. Also published as /nav.json, which the Aethernal account panel
 // (wow.aethernal.net) reads so both sites share one menu: edit it here only.
-import { CURRENT_EXPANSION } from './characters';
+import { AETHERNAL_ENABLED, CURRENT_EXPANSION } from './characters';
 
 export interface NavTile {
   href: string;
@@ -41,9 +41,20 @@ export const nav: NavItem[] = [
     label: 'World of Warcraft',
     image: '/images/wow-icon.png',
     tiles: [
-      { href: '/wow/', label: 'Our Characters', description: `Pat, Mimi and friends on Forever, ${CURRENT_EXPANSION} and Aethernal`, icon: 'characters' },
-      { href: 'https://wow.aethernal.net/', label: 'Account Panel', description: 'Sign up or manage your account', icon: 'realm', section: 'Aethernal server' },
-      { href: 'https://wow.aethernal.net/armory', label: 'Armory', description: 'Look up Aethernal characters and guilds', icon: 'armory' },
+      {
+        href: '/wow/',
+        label: 'Our Characters',
+        description: AETHERNAL_ENABLED
+          ? `Pat, Mimi and friends on Forever, ${CURRENT_EXPANSION} and Aethernal`
+          : `Pat, Mimi and friends on Forever and ${CURRENT_EXPANSION}`,
+        icon: 'characters',
+      },
+      ...(AETHERNAL_ENABLED
+        ? [
+            { href: 'https://wow.aethernal.net/', label: 'Account Panel', description: 'Sign up or manage your account', icon: 'realm', section: 'Aethernal server' },
+            { href: 'https://wow.aethernal.net/armory', label: 'Armory', description: 'Look up Aethernal characters and guilds', icon: 'armory' },
+          ] satisfies NavTile[]
+        : []),
     ],
   },
 ];

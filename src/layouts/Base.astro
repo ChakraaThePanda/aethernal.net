@@ -1,13 +1,19 @@
 ---
 import '../styles/global.css';
 import { nav, NAV_ICONS } from '../data/nav';
+import { AETHERNAL_ENABLED } from '../data/characters';
 
 interface Props {
   title?: string;
   description?: string;
 }
 
-const { title, description = 'Aethernal: our WoW server, characters, MTG decks and other projects.' } = Astro.props;
+const {
+  title,
+  description = AETHERNAL_ENABLED
+    ? 'Aethernal: our WoW server, characters, MTG decks and other projects.'
+    : 'Aethernal: our WoW characters, MTG decks and other projects.',
+} = Astro.props;
 const fullTitle = title ? `${title} · Aethernal` : 'Aethernal';
 const path = Astro.url.pathname;
 
