@@ -78,7 +78,9 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
               </span>
             </span>
           ) : (
-            <a href={item.href} data-same-tab aria-current={isActive(item.href!) ? 'page' : undefined}>{item.label}</a>
+            <a class:list={[{ 'nav-img': item.image }]} href={item.href} data-same-tab aria-current={isActive(item.href!) ? 'page' : undefined}>
+              {item.image && <img src={item.image} alt="" width="20" height="20" />}{item.label}
+            </a>
           ))}
         </nav>
       </div>
@@ -157,6 +159,8 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   }
   nav a:hover { color: var(--text); background: var(--accent-soft); }
   nav a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
+  /* A plain link with an icon (World of Warcraft while it has no dropdown), set like the dropdown's button. */
+  nav a.nav-img { display: flex; align-items: center; gap: 8px; margin-left: 8px; }
 
   /* An item with tiles (World of Warcraft): a panel of tiles that opens on hover, click or keyboard focus. */
   .nav-drop { position: relative; display: flex; }

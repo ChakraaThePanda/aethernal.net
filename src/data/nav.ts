@@ -37,24 +37,17 @@ export const NAV_ICONS = {
 export const nav: NavItem[] = [
   { href: '/', label: 'Home' },
   { href: '/mtg/', label: 'MTG' },
-  {
-    label: 'World of Warcraft',
-    image: '/images/wow-icon.png',
-    tiles: [
-      {
-        href: '/wow/',
-        label: 'Our Characters',
-        description: AETHERNAL_ENABLED
-          ? `Pat, Mimi and friends on Forever, ${CURRENT_EXPANSION} and Aethernal`
-          : `Pat, Mimi and friends on Forever and ${CURRENT_EXPANSION}`,
-        icon: 'characters',
-      },
-      ...(AETHERNAL_ENABLED
-        ? [
-            { href: 'https://wow.aethernal.net/', label: 'Account Panel', description: 'Sign up or manage your account', icon: 'realm', section: 'Aethernal server' },
-            { href: 'https://wow.aethernal.net/armory', label: 'Armory', description: 'Look up Aethernal characters and guilds', icon: 'armory' },
-          ] satisfies NavTile[]
-        : []),
-    ],
-  },
+  // With the Aethernal server off, Our Characters would be the only tile, so the dropdown becomes a
+  // plain link to it.
+  AETHERNAL_ENABLED
+    ? {
+        label: 'World of Warcraft',
+        image: '/images/wow-icon.png',
+        tiles: [
+          { href: '/wow/', label: 'Our Characters', description: `Pat, Mimi and friends on Forever, ${CURRENT_EXPANSION} and Aethernal`, icon: 'characters' },
+          { href: 'https://wow.aethernal.net/', label: 'Account Panel', description: 'Sign up or manage your account', icon: 'realm', section: 'Aethernal server' },
+          { href: 'https://wow.aethernal.net/armory', label: 'Armory', description: 'Look up Aethernal characters and guilds', icon: 'armory' },
+        ],
+      }
+    : { href: '/wow/', label: 'World of Warcraft', image: '/images/wow-icon.png' },
 ];
