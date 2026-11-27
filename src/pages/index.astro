@@ -1,24 +1,24 @@
 ---
 import Base from '../layouts/Base.astro';
 import DeckCard from '../components/DeckCard.astro';
-import ModernCharacter from '../components/ModernCharacter.astro';
 import { players } from '../data/decks';
 import { AETHERNAL_ENABLED, aethernalApi, GAME_LABELS } from '../data/characters';
 import { deckInfo } from '../lib/archidekt';
 import { recentRepos } from '../lib/github';
 import { loadModern } from '../lib/modern';
-import { classColor, classIconUrl, PRIORITY_OWNERS, rulesetLabel } from '../lib/wow';
+import { classColor, classIconUrl, rulesetLabel } from '../lib/wow';
 
 const PANEL = 'https://wow.aethernal.net';
 
-// Battle.net (Modern and Forever) characters newest login first. The page script re-sorts everyone (Aethernal included) by
-// last played once the server answers; the roster shows the top five (the height of the realm box).
+// Battle.net (Modern and Forever) characters newest login first. With the Aethernal server on, the page
+// script re-sorts everyone (Aethernal included) by last played once the server answers, and the roster
+// shows the top four (about the height of the realm box). With it off, the roster takes the full width
+// and shows the six latest in two columns, newest first reading across each row. Each row says when
+// the character was last played.
 const modern = (loadModern()?.characters ?? [])
   .filter((c) => !c.error)
   .sort((a, b) => (b.lastLogin ?? 0) - (a.lastLogin ?? 0));
-// While the Aethernal server is off there's no realm box, so Pat & Mimi's three most recently
-// played characters (any game) get full cards instead of the roster, as on /wow.
-const recent = modern.filter((c) => PRIORITY_OWNERS.includes(c.owner)).slice(0, 3);
+const roster = AETHERNAL_ENABLED ? modern : modern.slice(0, 6);
 
 // The four most recently edited decks across everyone.
 const allDecks = players.flatMap((p) => [...p.decks, ...(p.precons ?? [])].map((d) => ({ deck: d, owner: p.name })));
@@ -40,8 +40,14 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
       : 'Our WoW characters, Commander decks and other projects.'}</p>
   </section>
 
-  {AETHERNAL_ENABLED ? (
+  {!AETHERNAL_ENABLED && (
+    <div class="section-head first">
+      <h2 class="section-title">Recently played characters</h2>
+      <a class="more" href="/wow/">All characters →</a>
+    </div>
+  )}
   <div class="duo">
+    {AETHERNAL_ENABLED && (
     <section class="panel box realm">
       <div class="box-head">
         <h2>Aethernal realm</h2>
@@ -62,31 +68,40 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
         <a class="btn" href={`${PANEL}/`} data-same-tab>Log in</a>
       </div>
     </section>
+    )}
 
     <section class="panel box">
-      <div class="box-head">
-        <h2>Characters</h2>
-        <a class="more" href="/wow/">All characters →</a>
-      </div>
-      <ul class="roster">
-        {modern.map((c) => (
+      {AETHERNAL_ENABLED && (
+        <div class="box-head">
+          <h2>Characters</h2>
+          <a class="more" href="/wow/">All characters →</a>
+        </div>
+      )}
+      <ul class:list={['roster', { all: !AETHERNAL_ENABLED }]}>
+        {roster.map((c) => (
           <li style={`--class: ${classColor(c.className)}`} data-played={c.lastLogin ?? 0}>
-            <img class="portrait" src={c.avatar ?? classIconUrl(c.className)} alt="" width="36" height="36" loading="lazy" />
+            <img class="portrait" src={c.avatar ?? classIconUrl(c.className)} alt="" width="44" height="44" loading="lazy" />
             <span class="who">
               <span class="cname">{c.name}</span>
               <span class="sub">{c.level} {c.spec ? `${c.spec} ` : ''}{c.className} · {GAME_LABELS[c.game as keyof typeof GAME_LABELS] ?? GAME_LABELS.modern}</span>
+              {c.lastLogin ? <span class="sub seen" data-time={c.lastLogin}></span> : null}
             </span>
             <span class="tags">{rulesetLabel(c.ruleset) === 'Hardcore' && <span class="hardcore" title="Hardcore">HC</span>}{c.owner && <span class="owner-tag" data-owner={c.owner}>{c.owner}</span>}</span>
           </li>
         ))}
       </ul>
+      {!AETHERNAL_ENABLED && !roster.length && (
+        <p class="muted">Characters appear here after the next deploy fetches them from Battle.net.</p>
+      )}
       <!-- One row per Aethernal character, filled in from the realm API. -->
+      {AETHERNAL_ENABLED && (
       <template id="aethernal-row">
         <li data-played="0">
-          <img class="portrait" alt="" width="36" height="36" />
+          <img class="portrait" alt="" width="44" height="44" />
           <span class="who">
             <span class="cname"></span>
             <span class="sub"></span>
+            <span class="sub seen"></span>
           </span>
           <span class="tags">
             <span class="hardcore" title="Hardcore" hidden>HC</span>
@@ -94,23 +109,9 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
           </span>
         </li>
       </template>
-    </section>
-  </div>
-  ) : (
-    <section class="recent">
-      <div class="section-head first">
-        <h2 class="section-title">Recently played</h2>
-        <a class="more" href="/wow/">All characters →</a>
-      </div>
-      {recent.length ? (
-        <div class="chars">
-          {recent.map((c) => <ModernCharacter c={c} />)}
-        </div>
-      ) : (
-        <p class="panel empty muted">Characters appear here after the next deploy fetches them from Battle.net.</p>
       )}
     </section>
-  )}
+  </div>
 
   {recentDecks.length > 0 && (
     <section>
@@ -144,22 +145,24 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
 
 
   {AETHERNAL_ENABLED && <div id="aethernal-api" data-api={aethernalApi} hidden></div>}
-
-  {!AETHERNAL_ENABLED && (
-    <Fragment slot="head">
-      <!-- Wowhead tooltips for the gear links in the character cards. -->
-      <script is:inline>
-        const whTooltips = { colorLinks: false, iconizeLinks: true, renameLinks: false, iconSize: 'small' };
-      </script>
-      <script is:inline src="https://wow.zamimg.com/js/tooltips.js" defer></script>
-    </Fragment>
-  )}
 </Base>
 
 <script>
   import { classColor, classIconUrl } from '../lib/wow';
-  // Drawers, name fitting and face placement for the character cards (only there while the server is off).
-  import '../lib/cards';
+
+  // When each character was last played, worked out here so it stays current between deploys.
+  const DAY = 86_400_000;
+  const playedAgo = (t: number) => {
+    const days = Math.floor((Date.now() - t) / DAY);
+    if (days < 1) return 'Played today';
+    if (days < 2) return 'Played yesterday';
+    if (days < 60) return `Played ${days} days ago`;
+    if (days < 730) return `Played ${Math.floor(days / 30)} months ago`;
+    return `Played ${Math.floor(days / 365)} years ago`;
+  };
+  document.querySelectorAll<HTMLElement>('.seen[data-time]').forEach((el) => {
+    el.textContent = playedAgo(Number(el.dataset.time));
+  });
 
   // Live realm status and Aethernal characters from the account panel's public API.
   // Missing while the server is switched off (AETHERNAL_ENABLED): then nothing below runs.
@@ -209,8 +212,9 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
         li.querySelector<HTMLElement>('.hardcore')!.hidden = !c.hardcore;
         li.classList.toggle('online', c.online);
         li.dataset.played = String(c.online ? Date.now() : c.lastSeen ?? 0);
+        li.querySelector('.seen')!.textContent = c.online ? 'Online now' : c.lastSeen ? playedAgo(c.lastSeen) : '';
       }
-      // Most recently played first; CSS shows the first five.
+      // Most recently played first; CSS shows the first four.
       [...roster.children]
         .sort((a, b) => Number((b as HTMLElement).dataset.played) - Number((a as HTMLElement).dataset.played))
         .forEach((li) => roster.append(li));
@@ -265,14 +269,6 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
   .section-head h2 { flex: 1; }
   /* Recently played, straight under the hero while the server is off. */
   .section-head.first { margin-top: 0; }
-  .chars { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
-  /* Three cards fit in a row from 1052px (3 x 340 + 2 gaps). Between that and one column, the row
-     holds two, which would leave the third alone on a second row: show just the two newest there. */
-  .recent { container-type: inline-size; }
-  @container (min-width: 696px) and (max-width: 1051.98px) {
-    .chars > :global(:nth-child(3)) { display: none; }
-  }
-  .empty { padding: 18px 20px; margin: 0; }
   .more { font-size: 0.9rem; text-decoration: none; white-space: nowrap; }
   .more:hover { text-decoration: underline; }
 
@@ -312,9 +308,15 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { m
   .roster { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
   .roster li { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--border); }
   .roster li:first-child { border-top: 0; padding-top: 0; }
-  .roster li:nth-child(n + 6) { display: none; }
+  .roster:not(.all) li:nth-child(n + 5) { display: none; }
+  /* Server off: two columns, filled row by row. One column on narrow screens. */
+  .roster.all { display: grid; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 760px) {
+    .roster.all { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; }
+    .roster.all li:nth-child(2) { border-top: 0; padding-top: 0; }
+  }
   .roster :global(.portrait) {
-    width: 36px; height: 36px; border-radius: 6px; flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: 6px; flex-shrink: 0;
     border: 2px solid var(--class, var(--border)); background: var(--panel);
   }
   .who { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
